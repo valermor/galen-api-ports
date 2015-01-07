@@ -24,7 +24,7 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
     private String remoteServerAddr;
 
     @Override
-    public void initialize(String remoteServerAddr, String desiredCapabilities) throws TException {
+    public void initialize(String remoteServerAddr) throws TException {
         this.remoteServerAddr = remoteServerAddr;
     }
 

@@ -13,11 +13,8 @@ class GalenWebDriver(WebDriver):
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
         self.thrift = ThriftFacade()
-        desired_caps_json = None
-        if desired_capabilities:
-            desired_caps_json = json.dumps(desired_capabilities)
-        self.thrift.client.initialize(remote_url, desired_caps_json)
-        WebDriver.__init__(self, GalenRemoteConnection(remote_url, self.thrift.client), desired_capabilities,
+        self.thrift.initialize(remote_url)
+        WebDriver.__init__(self, GalenRemoteConnection(remote_url, self.thrift), desired_capabilities,
                            browser_profile, proxy, keep_alive)
 
     def quit(self):
@@ -35,6 +32,12 @@ class ThriftFacade():
             self.transport.open()
         except Thrift.TException, tx:
             print '%s' % (tx.message)
+
+    def initialize(self, remote_url):
+        self.client.initialize(remote_url)
+
+    def execute(self, command, request_params):
+        return self.client.execute(command, request_params)
 
     def close_connection(self):
         self.transport.close()
@@ -63,4 +66,5 @@ CHROME = {
 
 driver = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
 driver.get("http://www.google.it")
+driver.set_window_size(720, 1024)
 driver.quit()

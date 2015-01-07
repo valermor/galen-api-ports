@@ -6,37 +6,24 @@
  */
 package net.skyscanner.galen.api;
 
+import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
+import org.apache.thrift.protocol.TTupleProtocol;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
-
 import org.apache.thrift.scheme.TupleScheme;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.TException;
-import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.server.AbstractNonblockingServer.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.EnumMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.EnumSet;
-import java.util.Collections;
-import java.util.BitSet;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 public class RemoteCommandExecutor {
 
   public interface Iface {
 
-    public void initialize(String remote_server_addr, String desired_caps) throws org.apache.thrift.TException;
+    public void initialize(String remote_server_addr) throws org.apache.thrift.TException;
 
     public Response execute(String command, String params) throws org.apache.thrift.TException;
 
@@ -44,7 +31,7 @@ public class RemoteCommandExecutor {
 
   public interface AsyncIface {
 
-    public void initialize(String remote_server_addr, String desired_caps, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void initialize(String remote_server_addr, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void execute(String command, String params, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -70,17 +57,16 @@ public class RemoteCommandExecutor {
       super(iprot, oprot);
     }
 
-    public void initialize(String remote_server_addr, String desired_caps) throws org.apache.thrift.TException
+    public void initialize(String remote_server_addr) throws org.apache.thrift.TException
     {
-      send_initialize(remote_server_addr, desired_caps);
+      send_initialize(remote_server_addr);
       recv_initialize();
     }
 
-    public void send_initialize(String remote_server_addr, String desired_caps) throws org.apache.thrift.TException
+    public void send_initialize(String remote_server_addr) throws org.apache.thrift.TException
     {
       initialize_args args = new initialize_args();
       args.setRemote_server_addr(remote_server_addr);
-      args.setDesired_caps(desired_caps);
       sendBase("initialize", args);
     }
 
@@ -133,27 +119,24 @@ public class RemoteCommandExecutor {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void initialize(String remote_server_addr, String desired_caps, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void initialize(String remote_server_addr, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      initialize_call method_call = new initialize_call(remote_server_addr, desired_caps, resultHandler, this, ___protocolFactory, ___transport);
+      initialize_call method_call = new initialize_call(remote_server_addr, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class initialize_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String remote_server_addr;
-      private String desired_caps;
-      public initialize_call(String remote_server_addr, String desired_caps, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public initialize_call(String remote_server_addr, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.remote_server_addr = remote_server_addr;
-        this.desired_caps = desired_caps;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("initialize", org.apache.thrift.protocol.TMessageType.CALL, 0));
         initialize_args args = new initialize_args();
         args.setRemote_server_addr(remote_server_addr);
-        args.setDesired_caps(desired_caps);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -236,7 +219,7 @@ public class RemoteCommandExecutor {
 
       public initialize_result getResult(I iface, initialize_args args) throws org.apache.thrift.TException {
         initialize_result result = new initialize_result();
-        iface.initialize(args.remote_server_addr, args.desired_caps);
+        iface.initialize(args.remote_server_addr);
         return result;
       }
     }
@@ -325,7 +308,7 @@ public class RemoteCommandExecutor {
       }
 
       public void start(I iface, initialize_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.initialize(args.remote_server_addr, args.desired_caps,resultHandler);
+        iface.initialize(args.remote_server_addr,resultHandler);
       }
     }
 
@@ -386,7 +369,6 @@ public class RemoteCommandExecutor {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("initialize_args");
 
     private static final org.apache.thrift.protocol.TField REMOTE_SERVER_ADDR_FIELD_DESC = new org.apache.thrift.protocol.TField("remote_server_addr", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField DESIRED_CAPS_FIELD_DESC = new org.apache.thrift.protocol.TField("desired_caps", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -395,12 +377,10 @@ public class RemoteCommandExecutor {
     }
 
     public String remote_server_addr; // required
-    public String desired_caps; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      REMOTE_SERVER_ADDR((short)1, "remote_server_addr"),
-      DESIRED_CAPS((short)2, "desired_caps");
+      REMOTE_SERVER_ADDR((short)1, "remote_server_addr");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -417,8 +397,6 @@ public class RemoteCommandExecutor {
         switch(fieldId) {
           case 1: // REMOTE_SERVER_ADDR
             return REMOTE_SERVER_ADDR;
-          case 2: // DESIRED_CAPS
-            return DESIRED_CAPS;
           default:
             return null;
         }
@@ -464,8 +442,6 @@ public class RemoteCommandExecutor {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.REMOTE_SERVER_ADDR, new org.apache.thrift.meta_data.FieldMetaData("remote_server_addr", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DESIRED_CAPS, new org.apache.thrift.meta_data.FieldMetaData("desired_caps", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING          , "raw_caps")));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(initialize_args.class, metaDataMap);
     }
@@ -474,12 +450,10 @@ public class RemoteCommandExecutor {
     }
 
     public initialize_args(
-      String remote_server_addr,
-      String desired_caps)
+      String remote_server_addr)
     {
       this();
       this.remote_server_addr = remote_server_addr;
-      this.desired_caps = desired_caps;
     }
 
     /**
@@ -488,9 +462,6 @@ public class RemoteCommandExecutor {
     public initialize_args(initialize_args other) {
       if (other.isSetRemote_server_addr()) {
         this.remote_server_addr = other.remote_server_addr;
-      }
-      if (other.isSetDesired_caps()) {
-        this.desired_caps = other.desired_caps;
       }
     }
 
@@ -501,7 +472,6 @@ public class RemoteCommandExecutor {
     @Override
     public void clear() {
       this.remote_server_addr = null;
-      this.desired_caps = null;
     }
 
     public String getRemote_server_addr() {
@@ -528,45 +498,13 @@ public class RemoteCommandExecutor {
       }
     }
 
-    public String getDesired_caps() {
-      return this.desired_caps;
-    }
-
-    public initialize_args setDesired_caps(String desired_caps) {
-      this.desired_caps = desired_caps;
-      return this;
-    }
-
-    public void unsetDesired_caps() {
-      this.desired_caps = null;
-    }
-
-    /** Returns true if field desired_caps is set (has been assigned a value) and false otherwise */
-    public boolean isSetDesired_caps() {
-      return this.desired_caps != null;
-    }
-
-    public void setDesired_capsIsSet(boolean value) {
-      if (!value) {
-        this.desired_caps = null;
-      }
-    }
-
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case REMOTE_SERVER_ADDR:
         if (value == null) {
           unsetRemote_server_addr();
         } else {
-          setRemote_server_addr((String)value);
-        }
-        break;
-
-      case DESIRED_CAPS:
-        if (value == null) {
-          unsetDesired_caps();
-        } else {
-          setDesired_caps((String)value);
+          setRemote_server_addr((String) value);
         }
         break;
 
@@ -577,9 +515,6 @@ public class RemoteCommandExecutor {
       switch (field) {
       case REMOTE_SERVER_ADDR:
         return getRemote_server_addr();
-
-      case DESIRED_CAPS:
-        return getDesired_caps();
 
       }
       throw new IllegalStateException();
@@ -594,8 +529,6 @@ public class RemoteCommandExecutor {
       switch (field) {
       case REMOTE_SERVER_ADDR:
         return isSetRemote_server_addr();
-      case DESIRED_CAPS:
-        return isSetDesired_caps();
       }
       throw new IllegalStateException();
     }
@@ -619,15 +552,6 @@ public class RemoteCommandExecutor {
         if (!(this_present_remote_server_addr && that_present_remote_server_addr))
           return false;
         if (!this.remote_server_addr.equals(that.remote_server_addr))
-          return false;
-      }
-
-      boolean this_present_desired_caps = true && this.isSetDesired_caps();
-      boolean that_present_desired_caps = true && that.isSetDesired_caps();
-      if (this_present_desired_caps || that_present_desired_caps) {
-        if (!(this_present_desired_caps && that_present_desired_caps))
-          return false;
-        if (!this.desired_caps.equals(that.desired_caps))
           return false;
       }
 
@@ -657,16 +581,6 @@ public class RemoteCommandExecutor {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetDesired_caps()).compareTo(other.isSetDesired_caps());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetDesired_caps()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.desired_caps, other.desired_caps);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       return 0;
     }
 
@@ -692,14 +606,6 @@ public class RemoteCommandExecutor {
         sb.append("null");
       } else {
         sb.append(this.remote_server_addr);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("desired_caps:");
-      if (this.desired_caps == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.desired_caps);
       }
       first = false;
       sb.append(")");
@@ -753,14 +659,6 @@ public class RemoteCommandExecutor {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // DESIRED_CAPS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.desired_caps = iprot.readString();
-                struct.setDesired_capsIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -779,11 +677,6 @@ public class RemoteCommandExecutor {
         if (struct.remote_server_addr != null) {
           oprot.writeFieldBegin(REMOTE_SERVER_ADDR_FIELD_DESC);
           oprot.writeString(struct.remote_server_addr);
-          oprot.writeFieldEnd();
-        }
-        if (struct.desired_caps != null) {
-          oprot.writeFieldBegin(DESIRED_CAPS_FIELD_DESC);
-          oprot.writeString(struct.desired_caps);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -807,29 +700,19 @@ public class RemoteCommandExecutor {
         if (struct.isSetRemote_server_addr()) {
           optionals.set(0);
         }
-        if (struct.isSetDesired_caps()) {
-          optionals.set(1);
-        }
-        oprot.writeBitSet(optionals, 2);
+        oprot.writeBitSet(optionals, 1);
         if (struct.isSetRemote_server_addr()) {
           oprot.writeString(struct.remote_server_addr);
-        }
-        if (struct.isSetDesired_caps()) {
-          oprot.writeString(struct.desired_caps);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, initialize_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           struct.remote_server_addr = iprot.readString();
           struct.setRemote_server_addrIsSet(true);
-        }
-        if (incoming.get(1)) {
-          struct.desired_caps = iprot.readString();
-          struct.setDesired_capsIsSet(true);
         }
       }
     }

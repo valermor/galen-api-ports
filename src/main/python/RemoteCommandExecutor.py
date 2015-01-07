@@ -6,10 +6,11 @@
 #  options string: py
 #
 
-from thrift.Thrift import TProcessor
-
+from thrift.Thrift import TType, TMessageType, TException, TApplicationException
 from ttypes import *
-
+from thrift.Thrift import TProcessor
+from thrift.transport import TTransport
+from thrift.protocol import TBinaryProtocol, TProtocol
 try:
   from thrift.protocol import fastbinary
 except:
@@ -17,11 +18,10 @@ except:
 
 
 class Iface:
-  def initialize(self, remote_server_addr, desired_caps):
+  def initialize(self, remote_server_addr):
     """
     Parameters:
      - remote_server_addr
-     - desired_caps
     """
     pass
 
@@ -41,20 +41,18 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def initialize(self, remote_server_addr, desired_caps):
+  def initialize(self, remote_server_addr):
     """
     Parameters:
      - remote_server_addr
-     - desired_caps
     """
-    self.send_initialize(remote_server_addr, desired_caps)
+    self.send_initialize(remote_server_addr)
     self.recv_initialize()
 
-  def send_initialize(self, remote_server_addr, desired_caps):
+  def send_initialize(self, remote_server_addr):
     self._oprot.writeMessageBegin('initialize', TMessageType.CALL, self._seqid)
     args = initialize_args()
     args.remote_server_addr = remote_server_addr
-    args.desired_caps = desired_caps
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -131,7 +129,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = initialize_result()
-    self._handler.initialize(args.remote_server_addr, args.desired_caps)
+    self._handler.initialize(args.remote_server_addr)
     oprot.writeMessageBegin("initialize", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -155,18 +153,15 @@ class initialize_args:
   """
   Attributes:
    - remote_server_addr
-   - desired_caps
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'remote_server_addr', None, None, ), # 1
-    (2, TType.STRING, 'desired_caps', None, None, ), # 2
   )
 
-  def __init__(self, remote_server_addr=None, desired_caps=None,):
+  def __init__(self, remote_server_addr=None,):
     self.remote_server_addr = remote_server_addr
-    self.desired_caps = desired_caps
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -182,11 +177,6 @@ class initialize_args:
           self.remote_server_addr = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.desired_caps = iprot.readString();
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -200,10 +190,6 @@ class initialize_args:
     if self.remote_server_addr is not None:
       oprot.writeFieldBegin('remote_server_addr', TType.STRING, 1)
       oprot.writeString(self.remote_server_addr)
-      oprot.writeFieldEnd()
-    if self.desired_caps is not None:
-      oprot.writeFieldBegin('desired_caps', TType.STRING, 2)
-      oprot.writeString(self.desired_caps)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
