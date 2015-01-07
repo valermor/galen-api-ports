@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../galen/galen.iml" filepath="$PROJECT_DIR$/../galen/galen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/galen-api-thrift.iml" filepath="$PROJECT_DIR$/galen-api-thrift.iml" />
+    </modules>
+  </component>
+</project>
+
