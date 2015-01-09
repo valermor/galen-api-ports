@@ -1,4 +1,4 @@
 *.pyc
-*/.idea
-target/
-*.iml
+**/.idea
+**/target
+.iml

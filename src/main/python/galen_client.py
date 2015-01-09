@@ -12,8 +12,7 @@ import RemoteCommandExecutor
 class GalenWebDriver(WebDriver):
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
-        self.thrift = ThriftFacade()
-        self.thrift.initialize(remote_url)
+        self.thrift = ThriftFacade().initialize(remote_url)
         WebDriver.__init__(self, GalenRemoteConnection(remote_url, self.thrift), desired_capabilities,
                            browser_profile, proxy, keep_alive)
 
@@ -21,13 +20,13 @@ class GalenWebDriver(WebDriver):
         super(GalenWebDriver, self).quit()
         self.thrift.close_connection()
 
-
 class ThriftFacade():
     def __init__(self):
         try:
-            self.transport = TSocket.TSocket('localhost', 9091)
-            self.transport = TTransport.TBufferedTransport(self.transport)
-            protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
+            socket = TSocket.TSocket('localhost', 9091)
+            self.transport = TTransport.TFramedTransport(socket)
+            protocol_factory = TBinaryProtocol.TBinaryProtocolFactory()
+            protocol = protocol_factory.getProtocol(self.transport)
             self.client = RemoteCommandExecutor.Client(protocol)
             self.transport.open()
         except Thrift.TException, tx:
@@ -35,6 +34,7 @@ class ThriftFacade():
 
     def initialize(self, remote_url):
         self.client.initialize(remote_url)
+        return self
 
     def execute(self, command, request_params):
         return self.client.execute(command, request_params)
@@ -64,7 +64,17 @@ CHROME = {
     "platform": "ANY"
 }
 
-driver = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
-driver.get("http://www.google.it")
-driver.set_window_size(720, 1024)
-driver.quit()
+
+class GalenApi(object):
+    pass
+
+driver1 = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
+driver1.get("http://www.google.it")
+driver1.set_window_size(720, 1024)
+
+driver2 = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
+driver2.get("http://www.repubblica.it")
+
+# GalenApi().check_layout(driver, "homePage.spec", ('iphone', 'tablet'), None, )
+driver1.quit()
+driver2.quit()

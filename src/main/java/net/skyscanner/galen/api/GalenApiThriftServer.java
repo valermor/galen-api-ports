@@ -1,9 +1,9 @@
 package net.skyscanner.galen.api;
 
+import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TSimpleServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TNonblockingServerTransport;
 
 import static net.skyscanner.galen.api.RemoteCommandExecutor.Processor;
 
@@ -32,10 +32,10 @@ public class GalenApiThriftServer {
 
     public static void simple(RemoteCommandExecutor.Processor processor) {
         try {
-            TServerTransport serverTransport = new TServerSocket(9091);
-            TServer server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
+            TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(9091);
+            TServer server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
 
-            System.out.println("Starting the simple server...");
+            System.out.println("Starting the server...");
             server.serve();
         } catch (Exception e) {
             e.printStackTrace();
