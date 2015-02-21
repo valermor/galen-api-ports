@@ -1,8 +1,8 @@
 namespace java net.skyscanner.galen.api
 namespace py galenthrift
 
-typedef string request_params
-typedef map<string> spec_paths
+typedef list<string> spec_paths
+typedef list<string> tags
 
 
 union ResponseValueType {
@@ -20,13 +20,7 @@ struct Response {
 
 service RemoteCommandExecutor {
     void initialize(1:string remote_server_addr),
-    Response execute(1:string command, 2:request_params params)
-    void initialize_galen(1:string report_path)
-    i32 check_layout(1:string webdriver_session_id, 2:)
-}
-
-service Properties {
-	string getProperty(1:string key)
-	string getProperty(1:string key, 2:string defaultValue)
-	string load(1:string file)
+    Response execute(1:string session_id, 2:string command, 3:string params),
+    #void initialize_galen(1:string report_path),
+    #i32 check_layout(1:string webdriver_session_id, 2:spec_paths specs, 3:tags included_tags, 4:tags excluded_tags, 5:string property_file_path)
 }

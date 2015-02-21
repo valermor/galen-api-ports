@@ -1,9 +1,12 @@
 package net.skyscanner.galen.api;
 
-import org.apache.thrift.server.TNonblockingServer;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.transport.TNonblockingServerSocket;
-import org.apache.thrift.transport.TNonblockingServerTransport;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.server.TThreadedSelectorServer;
+import org.apache.thrift.transport.*;
+
+import java.util.concurrent.ExecutorService;
 
 import static net.skyscanner.galen.api.RemoteCommandExecutor.Processor;
 
@@ -14,27 +17,16 @@ public class GalenApiThriftServer {
     public static RemoteCommandExecutor.Processor processor;
 
     public static void main(String [] args) {
-        try {
-            handler = new GalenCommandExecutor();
-            processor = new Processor(handler);
-
-            Runnable simple = new Runnable() {
-                public void run() {
-                    simple(processor);
-                }
-            };
-
-            new Thread(simple).start();
-        } catch (Exception x) {
-            x.printStackTrace();
-        }
+        handler = new GalenCommandExecutor();
+        processor = new Processor(handler);
+        runService(processor);
     }
 
-    public static void simple(RemoteCommandExecutor.Processor processor) {
+    public static void runService(RemoteCommandExecutor.Processor processor) {
         try {
-            TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(9091);
-            TServer server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
-
+            TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(9092);
+            TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(serverTransport);
+            TServer server = new TThreadedSelectorServer(args.processor(processor));
             System.out.println("Starting the server...");
             server.serve();
         } catch (Exception e) {
