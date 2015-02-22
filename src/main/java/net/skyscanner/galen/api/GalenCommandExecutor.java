@@ -1,15 +1,21 @@
 package net.skyscanner.galen.api;
 
+import net.mindengine.galen.api.Galen;
+import net.mindengine.galen.reports.GalenTestInfo;
+import net.mindengine.galen.reports.HtmlReportBuilder;
+import net.mindengine.galen.reports.TestReport;
+import net.mindengine.galen.reports.model.LayoutReport;
 import org.apache.thrift.TException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.Properties;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static net.skyscanner.galen.api.GsonUtils.getGson;
@@ -60,6 +66,30 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public int check_layout(String testName, String driverSessionId, String specs, List<String> includedTags, List<String> excludedTags) throws SpecNotFoundException {
+        WebDriver driver = DriversPool.get().getBySessionId(driverSessionId);
+        try {
+            TestReport testReport = GalenReportsContainer.get().registerTest(testName);
+            LayoutReport layoutReport = Galen.checkLayout(driver, specs, includedTags, excludedTags, new Properties(), null);
+            testReport.layout(layoutReport, "Check layout " + specs);
+            GalenReportsContainer.get().updateEndTime(testName);
+        } catch (IOException e) {
+            throw new SpecNotFoundException(e.getMessage());
+        }
+        return 0;
+    }
+
+    @Override
+    public void generate_report(String reportFolderPath) throws TException {
+        List<GalenTestInfo> tests = GalenReportsContainer.get().getAllTests();
+        try {
+            new HtmlReportBuilder().build(tests, reportFolderPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

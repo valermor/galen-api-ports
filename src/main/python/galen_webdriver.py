@@ -4,12 +4,7 @@ import random
 from time import sleep
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
-
-from thrift import Thrift
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
-import RemoteCommandExecutor
+from thrift_client import ThriftFacade
 
 
 class GalenWebDriver(WebDriver):
@@ -30,34 +25,6 @@ class GalenWebDriver(WebDriver):
     def quit(self):
         super(GalenWebDriver, self).quit()
         self.thrift.close_connection()
-
-
-class ThriftFacade(object):
-    """
-    This class is a facade of the thrift client which hides all the details of the implementation and exposes only
-    the methods needed by the command_executor implemented in GalenRemoteConnection.
-    """
-    def __init__(self):
-        try:
-            socket = TSocket.TSocket('localhost', 9092)
-            self.transport = TTransport.TFramedTransport(socket)
-            protocol_factory = TBinaryProtocol.TBinaryProtocolFactory()
-            protocol = protocol_factory.getProtocol(self.transport)
-            self.client = RemoteCommandExecutor.Client(protocol)
-            self.transport.open()
-        except Thrift.TException, tx:
-            print '%s' % (tx.message)
-
-    def initialize(self, remote_url):
-        self.client.initialize(remote_url)
-        return self
-
-    def execute(self, session_id, command, request_params):
-        return self.client.execute(session_id, command, request_params)
-
-    def close_connection(self):
-        self.transport.close()
-
 
 class GalenRemoteConnection(RemoteConnection):
     """
@@ -87,12 +54,7 @@ CHROME = {
     "platform": "ANY"
 }
 
-
-class GalenApi(object):
-    pass
-
-
-def run_galen_test():
+def run_webdriver_test():
     driver1 = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
     driver1.get("http://www.google.it")
     driver1.set_window_size(720, 1024)
@@ -123,5 +85,5 @@ def run_parallel_sessions():
 
 
 if __name__ == '__main__':
-    # run_galen_test()
+    # run_webdriver_test()
     run_parallel_sessions()

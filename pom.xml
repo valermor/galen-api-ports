@@ -27,10 +27,15 @@
             <artifactId>selenium-api</artifactId>
             <version>2.43.1</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.testng</groupId>-->
+            <!--<artifactId>testng</artifactId>-->
+            <!--<version>6.8.8</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.8.8</version>
+            <groupId>net.mindengine</groupId>
+            <artifactId>galen</artifactId>
+            <version>1.5.3</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
