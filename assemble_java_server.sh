@@ -1,22 +1,32 @@
 #!/bin/sh
 
-# Generate _thrift Java files inside the target folder (see pom.xml outputDirectory)
-echo "mvn clean thrift:compile"
+java_target_folder=./src/main/java/galen/api/server/
+target_java_thrift=${java_target_folder}/thrift
+gen_thrift_files_folder=./target/generated-sources/thrift/galen/api/server/
+destination_server_folder=bin
+
+echo "Generate thrift files"
 mvn clean thrift:compile
-echo "rm -rf ./src/main/java/galen/api/server/thrift"
-rm -rf ./src/main/java/galen/api/server/thrift
-echo "mv ./target/generated-sources/thrift/galen/api/server/* ./src/main/java/galen/api/server/"
-mv ./target/generated-sources/thrift/galen/api/server/* ./src/main/java/galen/api/server/
+
+if [ "$(ls -A ${target_java_thrift})" ]; then
+     rm -rf ${target_java_thrift}
+fi
+
+echo "Copy generated Java thrift files to Java target folder"
+mv ${gen_thrift_files_folder}/* ${java_target_folder}
 
 # package server into jar
 echo "mvn clean package"
 mvn clean package
 
 # move server jar into bin folder
-echo "rm -rf bin"
-rm -rf bin
-echo "bin"
+echo "Copy packaged server into bin folder"
+if [ "$(ls -A ${destination_server_folder})" ]; then
+     rm -rf ${destination_server_folder}
+fi
 mkdir bin
 
-echo "mv -f ./target/galen-api-thrift-1.0-SNAPSHOT-jar-with-dependencies.jar ./bin/galen-api-server.jar"
+echo "Server jar copied to /${destination_server_folder}/galen-api-server.jar"
 mv -f ./target/galen-api-thrift-1.0-SNAPSHOT-jar-with-dependencies.jar ./bin/galen-api-server.jar
+
+exit 1
