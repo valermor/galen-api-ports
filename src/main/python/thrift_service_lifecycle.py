@@ -43,11 +43,6 @@ def start_server(server_port=DEFAULT_THRIFT_SERVER_PORT):
             Thread(target=stream_watcher, name='stderr-watcher', args=('STDERR', server_process.stderr)).start()
             Thread(target=printer, name='printer', args=(server_process,)).start()
         logger.info("Started server at port " + str(server_port))
-    else:
-        logger.info("Server already running at port " + str(server_port))
-        stop_server(server_port)
-        start_server(server_port)
-
 
 
 def stop_server(server_port):

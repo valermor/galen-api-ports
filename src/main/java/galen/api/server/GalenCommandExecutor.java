@@ -27,14 +27,17 @@ import static org.openqa.selenium.remote.ErrorCodes.SESSION_NOT_CREATED;
 import static org.openqa.selenium.remote.ErrorCodes.SUCCESS;
 
 public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
+    /**
+     * Implementation of RemoteCommandExecutor interface.
+     */
 
     private Log log = LogFactory.getLog(GalenApiServer.class);
 
     private String remoteServerAddress;
 
     @Override
-    public void initialize(String remoteServerAddr) throws TException {
-        this.remoteServerAddress = remoteServerAddr;
+    public void initialize(String remoteServerAddress) throws TException {
+        this.remoteServerAddress = remoteServerAddress;
     }
 
     @Override
@@ -42,16 +45,16 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
         Map<String, Object> paramsAsMap = fromJsonToStringObjectMap(params);
         if (name.equals(DriverCommand.NEW_SESSION)) {
             try {
-                HashMap<String, Object> hashMap = transformDesiredCapabilities(paramsAsMap);
+                HashMap<String, Object> hashMap = extractDesiredCapabilities(paramsAsMap);
                 WebDriver driver = new RemoteWebDriver(new URL(remoteServerAddress), new DesiredCapabilities(hashMap));
                 DriversPool.get().set(driver);
-                return createSuccessResponse(driver);
+                return createSessionInitSuccessResponse(driver);
             } catch (MalformedURLException e) {
-                createFailureResponse();
+                createSessionInitFailureResponse();
                 log.error("Provided URL is malformed " + remoteServerAddress);
                 throw new RemoteBrowserException("Provided URL is malformed " + remoteServerAddress);
             } catch (UnreachableBrowserException e) {
-                createFailureResponse();
+                createSessionInitFailureResponse();
                 log.error("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
                     throw new RemoteBrowserException("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
             }
@@ -67,7 +70,7 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
                 return null;
             } else {
                 if (name.equals(DriverCommand.QUIT)) {
-                    DriversPool.get().clear(sessionId);
+                    DriversPool.get().removeDriverBySessionId(sessionId);
                 }
                 return new Response(string_cap(getGson().toJson(response.getValue())), response.getSessionId(),
                         response.getStatus(), response.getState());
@@ -86,6 +89,7 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
             LayoutReport layoutReport = Galen.checkLayout(driver, specs, includedTags, excludedTags, new Properties(), null);
             testReport.layout(layoutReport, "Check layout " + specs);
             GalenReportsContainer.get().updateEndTime(testName);
+            return layoutReport.errors();
         } catch (FileSyntaxException e) {
             log.error("Could not find spec file " + specs);
             throw new SpecNotFoundException(e.getMessage());
@@ -113,7 +117,10 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
         return getGson().<Map<String, Object>>fromJson(params, Object.class);
     }
 
-    private Response createSuccessResponse(WebDriver driver) {
+    /**
+     * Packages a successful session setup response which can be sent across the Thrift interface.
+     */
+    private Response createSessionInitSuccessResponse(WebDriver driver) {
         Response response = new Response();
         response.setStatus(SUCCESS);
         RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
@@ -123,14 +130,21 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
         return response;
     }
 
-    private Response createFailureResponse() {
+    /**
+     * Packages a failing session setup response which can be sent across the Thrift interface.
+     */
+    private Response createSessionInitFailureResponse() {
         Response response = new Response();
         response.setStatus(SESSION_NOT_CREATED);
         response.setState(new ErrorCodes().toState(SESSION_NOT_CREATED));
         return response;
     }
 
-    private static HashMap<String, Object> transformDesiredCapabilities(Map<String, Object> paramsAsMap) {
+    /**
+     * Extract desired capabilities from json document as received over Thrift interface into a HashMap
+     * where the key set is the names of the capabilities.
+     */
+    private static HashMap<String, Object> extractDesiredCapabilities(Map<String, Object> paramsAsMap) {
         Map<String, Object> desiredCapabilities;
         if (paramsAsMap.containsKey("desiredCapabilities")) {
             desiredCapabilities = (Map<String, Object>) paramsAsMap.get("desiredCapabilities");

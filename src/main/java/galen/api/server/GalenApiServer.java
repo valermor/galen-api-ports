@@ -28,6 +28,8 @@ public class GalenApiServer {
         if (!argsList.isEmpty()) {
             serverPort = valueOf(argsList.get(0));
         }
+        //TODO add command to query current number of drivers.
+        //TODO add command to stop server instead of kill -9.
         handler = new GalenCommandExecutor();
         processor = new Processor(handler);
         runService(processor, serverPort);

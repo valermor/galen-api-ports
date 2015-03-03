@@ -9,7 +9,9 @@ import java.util.List;
 import static java.lang.String.format;
 
 public class DriversPool {
-
+    /**
+     * Utility class which stores current pool of drivers.
+     */
     private static final DriversPool instance = new DriversPool();
     private final List<WebDriver> driversPool = new ArrayList<WebDriver>();
 
@@ -37,7 +39,11 @@ public class DriversPool {
         throw new IllegalStateException(format("Driver with session id %s has never been created", sessionId));
     }
 
-    public void clear(String sessionId) {
+    public void removeDriverBySessionId(String sessionId) {
         driversPool.remove(this.getBySessionId(sessionId));
+    }
+
+    public int hasDrivers() {
+        return driversPool.size();
     }
 }

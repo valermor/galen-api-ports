@@ -22,7 +22,7 @@ class ThriftFacade(object):
     def __init__(self):
         try:
             start_command_executor_service(REMOTE_COMMAND_EXECUTOR_SERVICE_PORT)
-            sleep(3)
+            sleep(3) #TODO Implement wait until server is running
             socket = TSocket.TSocket('localhost', REMOTE_COMMAND_EXECUTOR_SERVICE_PORT)
             self.transport = TTransport.TFramedTransport(socket)
             protocol_factory = TBinaryProtocol.TBinaryProtocolFactory()
@@ -42,7 +42,6 @@ class ThriftFacade(object):
 
     def close_connection(self):
         self.transport.close()
-        stop_command_executor_service(REMOTE_COMMAND_EXECUTOR_SERVICE_PORT)
 
     def check_api(self, test_name, driver_session_id, spec_name, included_tags, excluded_tags):
         try:
@@ -60,9 +59,7 @@ def start_command_executor_service(server_port):
     """
     Start CommandExecutor thrift service on the given port.
     """
-    # start_server(server_port)
-    pass
+    start_server(server_port)
 
 def stop_command_executor_service(server_port):
-    # stop_server(server_port)
-    pass
+    stop_server(server_port)
