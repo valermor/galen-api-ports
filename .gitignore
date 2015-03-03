@@ -3,3 +3,7 @@
 **/target
 .iml
 .idea
+/src/main/java/galen/api/server/thrift
+/src/main/python/galenthrift
+/src/main/resources
+.DS_Store

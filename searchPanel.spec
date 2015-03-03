@@ -6,7 +6,7 @@ start-date-input-label                                            xpath      id(
 start-date-input                                                  id         sd-placeholder
 end-date-input-label                                              xpath      id('ed-placeholder')/parent::label
 end-date-input                                                    id         ed-placeholder
-guests-dropdown-label                                             xpath      id('na')/preceding-sibling::label
+guests-dropdown-label                                             xpath      id('na')/preceding-sibling::label`
 guests-dropdown                                                   id         na
 rooms-dropdown-label                                              xpath      id('nr')/preceding-sibling::label
 rooms-dropdown                                                    id         nr

@@ -1,4 +1,4 @@
-package net.skyscanner.galen.api;
+package galen.api.server;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;

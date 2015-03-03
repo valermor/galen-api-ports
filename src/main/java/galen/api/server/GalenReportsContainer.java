@@ -1,4 +1,4 @@
-package net.skyscanner.galen.api;
+package galen.api.server;
 
 import net.mindengine.galen.reports.GalenTestInfo;
 import net.mindengine.galen.reports.TestReport;

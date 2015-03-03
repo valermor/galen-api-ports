@@ -1,4 +1,4 @@
-package net.skyscanner.galen.api;
+package galen.api.server;
 
 import com.google.gson.*;
 

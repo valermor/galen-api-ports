@@ -4,15 +4,15 @@ import random
 from time import sleep
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
+from galenthrift.ttypes import RemoteBrowserException
 from thrift_client import ThriftFacade
 
 
 class GalenWebDriver(WebDriver):
     """
-    This is implementation of WebDriver over Thrift which hides all the complexity of remoting commands over RPC
-    and exposes the usual WebDriver API.
-    Internally, GalenWebDriver makes use of an ad-hoc command_executor which remotes commands to RemoteWebDriver to
-    the Thrift interface.
+    This is implementation of RemoteWebDriver Client over Thrift. The commands to be sent to a remote Grid are intercepted
+    and sent across the RPC interface.
+    Internally, GalenWebDriver makes use of GalenRemoteConnection, an ad-hoc command_executor..
     """
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
@@ -36,13 +36,23 @@ class GalenRemoteConnection(RemoteConnection):
         self.session_id = None
 
     def execute(self, command, params):
-        command_info = self._commands[command]
-        assert command_info is not None, 'Unrecognised command %s' % command
-        data = json.dumps(params)
+        """
+        Overrides execute methods by sending commands through the thrift interface.
+        :param command: a selenium.webdriver.remote.Command object
+        :param params: a list of parameters
+        :return: a dict containing the response from the RemoteWebDriver service.
+        """
+        try:
+            command_info = self._commands[command]
+            assert command_info is not None, 'Unrecognised command %s' % command
+            data = json.dumps(params)
 
-        response = self.thrift_client.execute(self.session_id, command, data)
-        return {'status': response.status, 'sessionId': response.session_id, 'state': response.state,
-                'value': response.value.string_cap}
+            response = self.thrift_client.execute(self.session_id, command, data)
+            return {'status': response.status, 'sessionId': response.session_id, 'state': response.state,
+                    'value': response.value.string_cap}
+        except RemoteBrowserException as e:
+            self.thrift_client.close_connection()
+            raise Exception(e.message)
 
     def set_session_id(self, session_id):
         self.session_id = session_id

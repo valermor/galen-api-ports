@@ -1,5 +1,6 @@
 from exception import NotReadyException
 from galen_webdriver import GalenWebDriver, CHROME
+from galenthrift.ttypes import SpecNotFoundException
 
 
 class GalenApi(object):
@@ -10,12 +11,16 @@ class GalenApi(object):
 
     def with_test_info(self, test_info):
         self.test_info = test_info
+        return self
 
     def check_layout(self, driver, spec, included_tags, excluded_tags):
         if not isinstance(driver, GalenWebDriver):
-            raise ValueError("Provider driver object is not an instance of GalenWebDriver")
+            raise ValueError("Provided driver object is not an instance of GalenWebDriver")
         self.thrift_client = driver.thrift
-        self.thrift_client.check_api(self.test_info, driver.session_id, spec, included_tags, excluded_tags)
+        try:
+            self.thrift_client.check_api(self.test_info, driver.session_id, spec, included_tags, excluded_tags)
+        except SpecNotFoundException as e:
+            raise Exception("Spec was not found: " + str(e.message))
 
     def generate_report(self, report_folder):
         if not self.thrift_client:
@@ -28,8 +33,7 @@ def run_galen_test():
     driver.get("http://www.skyscanner.net/hotels")
     driver.set_window_size(720, 1024)
 
-    galen_api = GalenApi()
-    galen_api.with_test_info('a Galen test')
+    galen_api = GalenApi().with_test_info('a Galen test')
     galen_api.check_layout(driver, 'homePage.spec', ['phone'], None)
     galen_api.generate_report("target/galen")
 
