@@ -1,15 +1,14 @@
 import logging
 from time import sleep
 from thrift import Thrift
-from thrift.Thrift import TApplicationException
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
-from galenthrift import RemoteCommandExecutor
+from galenthrift import GalenApiRemoteService
 from galenthrift.ttypes import SpecNotFoundException
 
-from thrift_service_lifecycle import start_server, stop_server
+from remote_service_lifecycle import start_server, stop_server
 
-REMOTE_COMMAND_EXECUTOR_SERVICE_PORT = 9092
+GALEN_REMOTE_API_SERVICE_PORT = 9092
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +20,16 @@ class ThriftFacade(object):
     """
     def __init__(self):
         try:
-            start_command_executor_service(REMOTE_COMMAND_EXECUTOR_SERVICE_PORT)
+            start_galen_remote_api_service(GALEN_REMOTE_API_SERVICE_PORT)
             sleep(3) #TODO Implement wait until server is running
-            socket = TSocket.TSocket('localhost', REMOTE_COMMAND_EXECUTOR_SERVICE_PORT)
+            socket = TSocket.TSocket('localhost', GALEN_REMOTE_API_SERVICE_PORT)
             self.transport = TTransport.TFramedTransport(socket)
             protocol_factory = TBinaryProtocol.TBinaryProtocolFactory()
             protocol = protocol_factory.getProtocol(self.transport)
-            self.client = RemoteCommandExecutor.Client(protocol)
+            self.client = GalenApiRemoteService.Client(protocol)
             self.transport.open()
         except Thrift.TException, tx:
-            stop_server(REMOTE_COMMAND_EXECUTOR_SERVICE_PORT)
+            stop_galen_remote_api_service(GALEN_REMOTE_API_SERVICE_PORT)
             raise Exception('%s' % (tx.message))
 
     def initialize(self, remote_url):
@@ -42,6 +41,7 @@ class ThriftFacade(object):
 
     def close_connection(self):
         self.transport.close()
+
 
     def check_api(self, test_name, driver_session_id, spec_name, included_tags, excluded_tags):
         try:
@@ -55,11 +55,12 @@ class ThriftFacade(object):
         self.client.generate_report(report_folder_path)
 
 
-def start_command_executor_service(server_port):
+def start_galen_remote_api_service(server_port):
     """
     Start CommandExecutor thrift service on the given port.
     """
     start_server(server_port)
 
-def stop_command_executor_service(server_port):
+
+def stop_galen_remote_api_service(server_port):
     stop_server(server_port)

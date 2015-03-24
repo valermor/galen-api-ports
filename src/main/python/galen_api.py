@@ -64,8 +64,9 @@ def run_galen_test():
 
     galen_api = GalenApi().with_test_info('a Galen test')
     errors = galen_api.check_layout(driver, 'homePage.spec', ['phone'], None)
-    if errors !=0:
+    if errors != 0:
         galen_api.generate_report("target/galen")
+    driver.quit()
 
 
 if __name__ == '__main__':

@@ -2,16 +2,20 @@ package galen.api.server;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static galen.api.server.utils.DriverUtils.getSessionId;
 import static java.lang.String.format;
 
+/**
+ * Utility class to store and retrieve instances of RemoteWebdriver.
+ */
 public class DriversPool {
-    /**
-     * Utility class which stores current pool of drivers.
-     */
+    private Logger log = LoggerFactory.getLogger(DriversPool.class);
     private static final DriversPool instance = new DriversPool();
     private final List<WebDriver> driversPool = new ArrayList<WebDriver>();
 
@@ -23,6 +27,7 @@ public class DriversPool {
     }
 
     public void set(WebDriver driver) {
+        log.debug("Storing WebDriver instance with sessionId " + getSessionId(driver));
         if (!driversPool.contains(driver)) {
             driversPool.add(driver);
         }
@@ -40,10 +45,11 @@ public class DriversPool {
     }
 
     public void removeDriverBySessionId(String sessionId) {
+        log.debug("Removing WebDriver instance with sessionId " + sessionId);
         driversPool.remove(this.getBySessionId(sessionId));
     }
 
-    public int hasDrivers() {
+    public int activeDrivers() {
         return driversPool.size();
     }
 }

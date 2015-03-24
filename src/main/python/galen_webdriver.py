@@ -11,8 +11,9 @@ from thrift_client import ThriftFacade
 class GalenWebDriver(WebDriver):
     """
     This is implementation of RemoteWebDriver Client over Thrift. The commands to be sent to a remote Grid are intercepted
-    and sent across the RPC interface.
-    Internally, GalenWebDriver makes use of GalenRemoteConnection, an ad-hoc command_executor..
+    and sent across the Thrift interface.
+    Internally, GalenWebDriver makes use of GalenRemoteConnection, an ad-hoc command_executor which sends commands over
+    the Thrift interface.
     """
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
@@ -25,6 +26,7 @@ class GalenWebDriver(WebDriver):
     def quit(self):
         super(GalenWebDriver, self).quit()
         self.thrift.close_connection()
+
 
 class GalenRemoteConnection(RemoteConnection):
     """

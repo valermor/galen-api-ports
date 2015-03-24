@@ -1,19 +1,21 @@
 package galen.api.server;
 
+import galen.api.server.thrift.GalenApiRemoteService;
 import galen.api.server.thrift.RemoteBrowserException;
-import galen.api.server.thrift.RemoteCommandExecutor;
 import galen.api.server.thrift.Response;
+import galen.api.server.thrift.SpecNotFoundException;
 import net.mindengine.galen.api.Galen;
 import net.mindengine.galen.parser.FileSyntaxException;
 import net.mindengine.galen.reports.GalenTestInfo;
 import net.mindengine.galen.reports.HtmlReportBuilder;
 import net.mindengine.galen.reports.TestReport;
 import net.mindengine.galen.reports.model.LayoutReport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,15 +25,12 @@ import java.util.*;
 import static com.google.common.collect.Maps.newHashMap;
 import static galen.api.server.GsonUtils.getGson;
 import static galen.api.server.thrift.ResponseValueType.string_cap;
+import static java.lang.String.format;
 import static org.openqa.selenium.remote.ErrorCodes.SESSION_NOT_CREATED;
 import static org.openqa.selenium.remote.ErrorCodes.SUCCESS;
 
-public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
-    /**
-     * Implementation of RemoteCommandExecutor interface.
-     */
-
-    private Log log = LogFactory.getLog(GalenApiServer.class);
+public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
+    private Logger log = LoggerFactory.getLogger(GalenApiServer.class);
 
     private String remoteServerAddress;
 
@@ -45,22 +44,22 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
         Map<String, Object> paramsAsMap = fromJsonToStringObjectMap(params);
         if (name.equals(DriverCommand.NEW_SESSION)) {
             try {
+                log.info("Setting up new WebDriver session");
                 HashMap<String, Object> hashMap = extractDesiredCapabilities(paramsAsMap);
                 WebDriver driver = new RemoteWebDriver(new URL(remoteServerAddress), new DesiredCapabilities(hashMap));
                 DriversPool.get().set(driver);
                 return createSessionInitSuccessResponse(driver);
             } catch (MalformedURLException e) {
-                createSessionInitFailureResponse();
                 log.error("Provided URL is malformed " + remoteServerAddress);
                 throw new RemoteBrowserException("Provided URL is malformed " + remoteServerAddress);
             } catch (UnreachableBrowserException e) {
-                createSessionInitFailureResponse();
                 log.error("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
                     throw new RemoteBrowserException("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
             }
         }
         Command command = new Command(new SessionId(sessionId), name, paramsAsMap);
         try {
+            log.info(format("Executing command %s for sessionId %s", name, sessionId));
             WebDriver driver = DriversPool.get().getBySessionId(sessionId);
             org.openqa.selenium.remote.Response response = null;
             if (driver instanceof RemoteWebDriver) {
@@ -83,6 +82,7 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
 
     @Override
     public int check_layout(String testName, String driverSessionId, String specs, List<String> includedTags, List<String> excludedTags) throws SpecNotFoundException {
+        log.info(format("Executing check_layout for test " + testName + " with driver " + driverSessionId));
         WebDriver driver = DriversPool.get().getBySessionId(driverSessionId);
         try {
             TestReport testReport = GalenReportsContainer.get().registerTest(testName);
@@ -109,6 +109,17 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
         }
     }
 
+    @Override
+    public int active_drivers() throws TException {
+        return DriversPool.get().activeDrivers();
+    }
+
+    @Override
+    public void shut_service() throws TException {
+        log.info("Shutting down Galen API service.");
+        System.exit(1);
+    }
+
     /**
      * Transform a json String into a map of Object indexed by a String value.
      * This is needed to feed Command and DesideredCapabilities constructor.
@@ -133,10 +144,11 @@ public class GalenCommandExecutor implements RemoteCommandExecutor.Iface {
     /**
      * Packages a failing session setup response which can be sent across the Thrift interface.
      */
-    private Response createSessionInitFailureResponse() {
+    private Response createSessionInitFailureResponse(String reason) {
         Response response = new Response();
         response.setStatus(SESSION_NOT_CREATED);
         response.setState(new ErrorCodes().toState(SESSION_NOT_CREATED));
+        response.setValue(string_cap(reason));
         return response;
     }
 

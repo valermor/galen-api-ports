@@ -1,7 +1,7 @@
 *.pyc
 **/.idea
 **/target
-.iml
+*.iml
 .idea
 /src/main/java/galen/api/server/thrift
 /src/main/python/galenthrift
