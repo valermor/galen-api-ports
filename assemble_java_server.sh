@@ -23,10 +23,10 @@ mvn clean package
 echo "Copy packaged server into bin folder"
 if [ "$(ls -A ${destination_server_folder})" ]; then
      rm -rf ${destination_server_folder}
+     mkdir bin
 fi
-mkdir bin
 
 echo "Server jar copied to /${destination_server_folder}/galen-api-server.jar"
 mv -f ./target/galen-api-thrift-1.0-SNAPSHOT-jar-with-dependencies.jar ./bin/galen-api-server.jar
 
-exit 1
+exit 0

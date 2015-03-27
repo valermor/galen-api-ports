@@ -22,6 +22,7 @@ def server_running(server_port):
     """
     Checks if GalenRemoteApi service is running.
     """
+    #TODO Portability on non-Mac OSs
     output = commands.getoutput('lsof -i :' + str(server_port))
     return 'java' in output
 
@@ -30,6 +31,7 @@ def start_server(server_port=DEFAULT_THRIFT_SERVER_PORT):
     """
     Starts GalenRemoteApi service.
     """
+    #TODO Portability on non-Mac OSs
     if not server_running(server_port):
         p = re.compile(EXECUTABLE_PATH_PATTERN)
         m = p.match(os.getcwd())
@@ -48,12 +50,13 @@ def stop_server(server_port):
     """
     Stop GalenRemoteApi service.
     """
+    #TODO Portability on non-Mac OSs
     if server_running(server_port):
         output = commands.getoutput('lsof -i :' + str(server_port))
         lines = output.split('\n')
         for line in lines:
             fields = line.split()
-            if fields[1] != 'PID':
+            if 'java' in fields[0] and fields[1] != 'PID':
                 os.popen('kill -9 ' + fields[1])
     logger.info("Stopping server at port " + str(server_port))
 

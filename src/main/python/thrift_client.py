@@ -1,12 +1,15 @@
 import logging
 from time import sleep
+
 from thrift import Thrift
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
+from thrift.transport.TTransport import TTransportException
+
 from galenthrift import GalenApiRemoteService
 from galenthrift.ttypes import SpecNotFoundException
-
 from remote_service_lifecycle import start_server, stop_server
+
 
 GALEN_REMOTE_API_SERVICE_PORT = 9092
 
@@ -42,12 +45,19 @@ class ThriftFacade(object):
     def close_connection(self):
         self.transport.close()
 
+    def get_active_drivers(self):
+        return self.client.active_drivers()
+
+    def shut_service(self):
+        try:
+            self.client.shut_service()
+        except TTransportException:
+            pass
 
     def check_api(self, test_name, driver_session_id, spec_name, included_tags, excluded_tags):
         try:
             self.client.check_layout(test_name, driver_session_id, spec_name, included_tags, excluded_tags)
         except SpecNotFoundException as e:
-        # except Exception as e:
             logger.error(e.message)
             raise SpecNotFoundException(e)
 
@@ -60,7 +70,6 @@ def start_galen_remote_api_service(server_port):
     Start CommandExecutor thrift service on the given port.
     """
     start_server(server_port)
-
 
 def stop_galen_remote_api_service(server_port):
     stop_server(server_port)

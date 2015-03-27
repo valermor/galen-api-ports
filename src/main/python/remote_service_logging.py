@@ -16,12 +16,13 @@ class RemoteServiceStreamListener(Thread):
     """
     def __init__(self, identifier, proc):
         super(RemoteServiceStreamListener, self).__init__()
-        self.proc = proc
+        self.setDaemon(True)
+        self.process = proc
         self.identifier = identifier
         if 'STDOUT' in self.identifier:
-            self.stream = self.proc.stdout
+            self.stream = self.process.stdout
         elif 'STDERR' in self.identifier:
-            self.stream = self.proc.stderr
+            self.stream = self.process.stderr
 
     def run(self):
         print "starting listener for {id}\n".format(id=self.identifier)
@@ -39,6 +40,7 @@ class RemoteServiceLogger(Thread):
     """
     def __init__(self, process):
         super(RemoteServiceLogger, self).__init__()
+        self.setDaemon(True)
         self.process = process
 
     def run(self):

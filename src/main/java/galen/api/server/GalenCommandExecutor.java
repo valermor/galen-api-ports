@@ -1,7 +1,7 @@
 package galen.api.server;
 
 import galen.api.server.thrift.GalenApiRemoteService;
-import galen.api.server.thrift.RemoteBrowserException;
+import galen.api.server.thrift.RemoteWebDriverException;
 import galen.api.server.thrift.Response;
 import galen.api.server.thrift.SpecNotFoundException;
 import net.mindengine.galen.api.Galen;
@@ -51,10 +51,12 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                 return createSessionInitSuccessResponse(driver);
             } catch (MalformedURLException e) {
                 log.error("Provided URL is malformed " + remoteServerAddress);
-                throw new RemoteBrowserException("Provided URL is malformed " + remoteServerAddress);
+                return createSessionInitFailureResponse("Provided URL is malformed " + remoteServerAddress);
             } catch (UnreachableBrowserException e) {
                 log.error("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
-                    throw new RemoteBrowserException("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
+                return createSessionInitFailureResponse("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
+            } catch (WebDriverException e) {
+                throw new RemoteWebDriverException(e.getMessage());
             }
         }
         Command command = new Command(new SessionId(sessionId), name, paramsAsMap);

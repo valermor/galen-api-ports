@@ -1,11 +1,22 @@
 import json
+import logging
 import multiprocessing
 import random
 from time import sleep
+from selenium.common.exceptions import WebDriverException
+
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
-from galenthrift.ttypes import RemoteBrowserException
-from thrift_client import ThriftFacade
+
+from galenthrift.ttypes import RemoteWebDriverException
+from thrift_client import ThriftFacade, stop_galen_remote_api_service
+
+""" RESILIENCE_INTERVAL specifies after which amount of time we can assume there is no activity in the remote server
+    So that we are allowed to quit it.
+"""
+RESILIENCE_INTERVAL = 5
+
+logger = logging.getLogger(__name__)
 
 
 class GalenWebDriver(WebDriver):
@@ -17,18 +28,25 @@ class GalenWebDriver(WebDriver):
     """
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
-        self.thrift = ThriftFacade().initialize(remote_url)
-        remote_connection = GalenRemoteConnection(remote_url, self.thrift)
-        WebDriver.__init__(self, remote_connection, desired_capabilities,
-                           browser_profile, proxy, keep_alive)
-        remote_connection.set_session_id(self.session_id)
+        try:
+            self.thrift = ThriftFacade().initialize(remote_url)
+            remote_connection = ThriftRemoteConnection(remote_url, self.thrift)
+            WebDriver.__init__(self, remote_connection, desired_capabilities,
+                               browser_profile, proxy, keep_alive)
+            remote_connection.set_session_id(self.session_id)
+        except WebDriverException as e:
+            logger.error(e.msg)
+            sleep(RESILIENCE_INTERVAL)
+            if self.thrift.get_active_drivers() == 0:
+                self.thrift.shut_service()
+            raise e
 
     def quit(self):
         super(GalenWebDriver, self).quit()
         self.thrift.close_connection()
 
 
-class GalenRemoteConnection(RemoteConnection):
+class ThriftRemoteConnection(RemoteConnection):
     """
     Subclass of RemoteConnection which execute commands over the Thrift interface.
     """
@@ -52,9 +70,8 @@ class GalenRemoteConnection(RemoteConnection):
             response = self.thrift_client.execute(self.session_id, command, data)
             return {'status': response.status, 'sessionId': response.session_id, 'state': response.state,
                     'value': response.value.string_cap}
-        except RemoteBrowserException as e:
-            self.thrift_client.close_connection()
-            raise Exception(e.message)
+        except RemoteWebDriverException as e:
+            raise WebDriverException(e.message)
 
     def set_session_id(self, session_id):
         self.session_id = session_id
