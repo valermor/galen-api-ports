@@ -1,6 +1,6 @@
 #!/bin/sh
 
-project_name=galen-python-api
+project_name=galen-api-ports
 
 function cd_parent_to_project_folder()
 {

@@ -9,7 +9,7 @@ from remote_service_logging import RemoteServiceStreamListener, RemoteServiceLog
 
 GALEN_REMOTE_API_SERVER_START_SCRIPT = 'run_java_server.sh'
 
-PROJECT_NAME = 'galen-python-api'
+PROJECT_NAME = 'galen-api-ports'
 EXECUTABLE_PATH_PATTERN = '(.*/' + PROJECT_NAME + ').*'
 
 DEFAULT_THRIFT_SERVER_PORT = 9092
