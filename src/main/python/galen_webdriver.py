@@ -11,11 +11,6 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from pythrift.ttypes import RemoteWebDriverException
 from thrift_client import ThriftFacade, stop_galen_remote_api_service
 
-""" RESILIENCE_INTERVAL specifies after which amount of time we can assume there is no activity in the remote server
-    So that we are allowed to quit it.
-"""
-RESILIENCE_INTERVAL = 5
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,13 +31,12 @@ class GalenWebDriver(WebDriver):
             remote_connection.set_session_id(self.session_id)
         except WebDriverException as e:
             logger.error(e.msg)
-            sleep(RESILIENCE_INTERVAL)
-            if self.thrift.get_active_drivers() == 0:
-                self.thrift.shut_service()
+            self.thrift.shut_service_if_inactive()
             raise e
 
     def quit(self):
         super(GalenWebDriver, self).quit()
+        self.thrift.shut_service_if_inactive()
         self.thrift.close_connection()
 
 

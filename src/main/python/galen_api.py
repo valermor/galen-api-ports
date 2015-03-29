@@ -1,8 +1,9 @@
+import logging
 from exception import IllegalMethodCallException, FileNotFoundError
 from galen_webdriver import GalenWebDriver, CHROME
 from pythrift.ttypes import SpecNotFoundException
 
-
+logger = logging.getLogger(__name__)
 
 class GalenApi(object):
     """
@@ -46,6 +47,7 @@ class GalenApi(object):
         try:
             return self.thrift_client.check_api(self.test_info, driver.session_id, spec, included_tags, excluded_tags)
         except SpecNotFoundException as e:
+            self.thrift_client.shut_service_if_inactive()
             raise FileNotFoundError("Spec was not found: " + str(e.message))
 
     def generate_report(self, report_folder):
@@ -59,15 +61,21 @@ class GalenApi(object):
 
 
 def run_galen_test():
-    driver = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
-    driver.get("http://www.skyscanner.net/hotels")
-    driver.set_window_size(720, 1024)
+    driver = None
+    try:
+        driver = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
+        driver.get("http://www.skyscanner.net/hotels")
+        driver.set_window_size(720, 1024)
 
-    galen_api = GalenApi().with_test_info('a Galen test')
-    errors = galen_api.check_layout(driver, 'homePage.spec', ['phone'], None)
-    if errors != 0:
-        galen_api.generate_report("target/galen")
-    driver.quit()
+        galen_api = GalenApi().with_test_info('a Galen test')
+        errors = galen_api.check_layout(driver, 'homePage.spec', ['phone'], None)
+        if errors != 0:
+            galen_api.generate_report("target/galen")
+    except Exception as e:
+        logger.error(e.message)
+        raise e
+    finally:
+        driver.quit()
 
 
 if __name__ == '__main__':

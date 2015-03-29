@@ -13,6 +13,11 @@ from remote_service_lifecycle import start_server, stop_server
 
 GALEN_REMOTE_API_SERVICE_PORT = 9092
 
+""" RESILIENCE_INTERVAL specifies after which amount of time we can assume there is no activity in the remote server
+    So that we are allowed to quit it.
+"""
+RESILIENCE_INTERVAL = 5
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +50,11 @@ class ThriftFacade(object):
     def close_connection(self):
         self.transport.close()
 
+    def shut_service_if_inactive(self):
+        sleep(RESILIENCE_INTERVAL)
+        if self.get_active_drivers() == 0:
+            self.shut_service()
+
     def get_active_drivers(self):
         return self.client.active_drivers()
 
@@ -70,6 +80,8 @@ def start_galen_remote_api_service(server_port):
     Start CommandExecutor thrift service on the given port.
     """
     start_server(server_port)
+    # pass
 
 def stop_galen_remote_api_service(server_port):
     stop_server(server_port)
+    # pass
