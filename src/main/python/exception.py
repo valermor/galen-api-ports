@@ -5,3 +5,11 @@ class IllegalMethodCallException(Exception):
     """
     def __init__(self, *args, **kwargs):
         super(IllegalMethodCallException, self).__init__(*args, **kwargs)
+
+
+class FileNotFoundError(Exception):
+    """
+    A file was not found.
+    """
+    def __init__(self, *args, **kwargs):
+        super(FileNotFoundError, self).__init__(*args, **kwargs)

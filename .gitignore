@@ -4,7 +4,7 @@
 *.iml
 .idea
 /src/main/java/galen/api/server/thrift
-/src/main/python/galenthrift
+/src/main/python/pythrift
 /src/main/resources
 /bin
 .DS_Store

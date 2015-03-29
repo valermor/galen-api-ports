@@ -6,8 +6,8 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 from thrift.transport.TTransport import TTransportException
 
-from galenthrift import GalenApiRemoteService
-from galenthrift.ttypes import SpecNotFoundException
+from pythrift import GalenApiRemoteService
+from pythrift.ttypes import SpecNotFoundException
 from remote_service_lifecycle import start_server, stop_server
 
 

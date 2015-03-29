@@ -17,6 +17,7 @@ import org.openqa.selenium.remote.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -92,7 +93,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
             testReport.layout(layoutReport, "Check layout " + specs);
             GalenReportsContainer.get().updateEndTime(testName);
             return layoutReport.errors();
-        } catch (FileSyntaxException e) {
+        } catch (FileNotFoundException e) {
             log.error("Could not find spec file " + specs);
             throw new SpecNotFoundException(e.getMessage());
         } catch (IOException e) {

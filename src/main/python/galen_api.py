@@ -1,6 +1,7 @@
-from exception import IllegalMethodCallException
+from exception import IllegalMethodCallException, FileNotFoundError
 from galen_webdriver import GalenWebDriver, CHROME
-from galenthrift.ttypes import SpecNotFoundException
+from pythrift.ttypes import SpecNotFoundException
+
 
 
 class GalenApi(object):
@@ -45,7 +46,7 @@ class GalenApi(object):
         try:
             return self.thrift_client.check_api(self.test_info, driver.session_id, spec, included_tags, excluded_tags)
         except SpecNotFoundException as e:
-            raise Exception("Spec was not found: " + str(e.message))
+            raise FileNotFoundError("Spec was not found: " + str(e.message))
 
     def generate_report(self, report_folder):
         """

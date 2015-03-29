@@ -1,5 +1,5 @@
 namespace java galen.api.server.thrift
-namespace py galenthrift
+namespace py pythrift
 
 typedef list<string> tags
 

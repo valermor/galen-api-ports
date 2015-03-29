@@ -8,7 +8,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from galenthrift.ttypes import RemoteWebDriverException
+from pythrift.ttypes import RemoteWebDriverException
 from thrift_client import ThriftFacade, stop_galen_remote_api_service
 
 """ RESILIENCE_INTERVAL specifies after which amount of time we can assume there is no activity in the remote server

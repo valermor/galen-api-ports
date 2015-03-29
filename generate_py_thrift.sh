@@ -1,7 +1,7 @@
 #!/bin/sh
 
 python_folder=src/main/python
-destination_thrift_folder=${python_folder}/galenthrift
+destination_thrift_folder=${python_folder}/pythrift
 
 thrift --gen py -o target src/main/thrift/galen_api.thrift
 
