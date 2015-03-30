@@ -1,9 +1,12 @@
 import logging
+
 from exception import IllegalMethodCallException, FileNotFoundError
-from galen_webdriver import GalenWebDriver, CHROME
+from src.galen_webdriver import GalenWebDriver, CHROME
 from pythrift.ttypes import SpecNotFoundException
 
+
 logger = logging.getLogger(__name__)
+
 
 class GalenApi(object):
     """

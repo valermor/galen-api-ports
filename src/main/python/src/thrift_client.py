@@ -8,7 +8,7 @@ from thrift.transport.TTransport import TTransportException
 
 from pythrift import GalenApiRemoteService
 from pythrift.ttypes import SpecNotFoundException
-from remote_service_lifecycle import start_server, stop_server
+from src.remote_service_lifecycle import start_server, stop_server
 
 
 GALEN_REMOTE_API_SERVICE_PORT = 9092
@@ -80,8 +80,7 @@ def start_galen_remote_api_service(server_port):
     Start CommandExecutor thrift service on the given port.
     """
     start_server(server_port)
-    # pass
+
 
 def stop_galen_remote_api_service(server_port):
     stop_server(server_port)
-    # pass

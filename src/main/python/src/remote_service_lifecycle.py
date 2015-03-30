@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 
-from remote_service_logging import RemoteServiceStreamListener, RemoteServiceLogger
+from src.remote_service_logging import RemoteServiceStreamListener, RemoteServiceLogger
 
 
 GALEN_REMOTE_API_SERVER_START_SCRIPT = 'run_java_server.sh'
@@ -15,7 +15,6 @@ EXECUTABLE_PATH_PATTERN = '(.*/' + PROJECT_NAME + ').*'
 DEFAULT_THRIFT_SERVER_PORT = 9092
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 
 def server_running(server_port):
@@ -40,9 +39,9 @@ def start_server(server_port=DEFAULT_THRIFT_SERVER_PORT):
                                                                  start_script=GALEN_REMOTE_API_SERVER_START_SCRIPT,
                                                                  port=str(server_port))
             server_process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
-            RemoteServiceStreamListener('STDOUT', server_process).start()
-            RemoteServiceStreamListener('STDERR', server_process).start()
-            RemoteServiceLogger(server_process).start()
+            RemoteServiceStreamListener('STDOUT', server_process, 'stdout listener').start()
+            RemoteServiceStreamListener('STDERR', server_process, 'stderr listener').start()
+            RemoteServiceLogger(server_process, 'Remote service').start()
         logger.info("Started server at port " + str(server_port))
 
 

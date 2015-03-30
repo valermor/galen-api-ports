@@ -3,13 +3,14 @@ import logging
 import multiprocessing
 import random
 from time import sleep
-from selenium.common.exceptions import WebDriverException
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from pythrift.ttypes import RemoteWebDriverException
-from thrift_client import ThriftFacade, stop_galen_remote_api_service
+from src.thrift_client import ThriftFacade
+
 
 logger = logging.getLogger(__name__)
 

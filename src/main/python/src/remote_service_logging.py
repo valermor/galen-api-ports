@@ -3,7 +3,6 @@ import logging
 from threading import Thread
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 
 io_q = Queue()
@@ -14,10 +13,10 @@ class RemoteServiceStreamListener(Thread):
     Class implementing a Thread that listen to the remote service process stream (stdin, stderr) and queues logs messages
     into the Queue object, for the RemoteServiceLoggerThread to consume.
     """
-    def __init__(self, identifier, proc):
-        super(RemoteServiceStreamListener, self).__init__()
+    def __init__(self, identifier, process, name):
+        super(RemoteServiceStreamListener, self).__init__(name=name)
         self.setDaemon(True)
-        self.process = proc
+        self.process = process
         self.identifier = identifier
         if 'STDOUT' in self.identifier:
             self.stream = self.process.stdout
@@ -25,7 +24,7 @@ class RemoteServiceStreamListener(Thread):
             self.stream = self.process.stderr
 
     def run(self):
-        print "starting listener for {id}\n".format(id=self.identifier)
+        logger.info("starting listener for {id}\n".format(id=self.identifier))
         while True:
             data = self.stream.readline()
             if len(data) == 0:
@@ -38,8 +37,8 @@ class RemoteServiceLogger(Thread):
     Class implementing a Thread that reads fetches logs from the queue and dumps it to an error or an info log depending
     on whether the relevant server logs was issued on stdout or stderr, respectively.
     """
-    def __init__(self, process):
-        super(RemoteServiceLogger, self).__init__()
+    def __init__(self, process, name):
+        super(RemoteServiceLogger, self).__init__(name=name)
         self.setDaemon(True)
         self.process = process
 
