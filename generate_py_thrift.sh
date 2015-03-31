@@ -1,14 +1,15 @@
 #!/bin/sh
 
 python_folder=src/main/python
-destination_thrift_folder=${python_folder}/pythrift
+api_folder=${python_folder}/galenapi
+destination_thrift_folder=${api_folder}/pythrift
 
 thrift --gen py -o target src/main/thrift/galen_api.thrift
 
-if [ "$(ls -A ${destination_thrift_folder})" ]; then
+if [ -d "${destination_thrift_folder}" ]; then
     rm -rf ${destination_thrift_folder}
 fi
 
-mv target/gen-py/* ${python_folder}/
+mv target/gen-py/pythrift ${api_folder}/
 
-exit 1
+exit 0
