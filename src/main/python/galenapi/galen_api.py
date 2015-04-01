@@ -46,7 +46,7 @@ class GalenApi(object):
         """
         if not isinstance(driver, GalenWebDriver):
             raise ValueError("Provided driver object is not an instance of GalenWebDriver")
-        self.thrift_client = driver.thrift
+        self.thrift_client = driver.thrift_client
         try:
             return self.thrift_client.check_api(self.test_info, driver.session_id, spec, included_tags, excluded_tags)
         except SpecNotFoundException as e:
@@ -78,7 +78,7 @@ def run_galen_test():
         logger.error(e.message)
         raise e
     finally:
-        driver.quit()
+            driver.quit()
 
 
 if __name__ == '__main__':

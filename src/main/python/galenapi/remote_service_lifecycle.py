@@ -54,4 +54,4 @@ def stop_server(server_port):
 
 
 def locate_server_path():
-    return path.join(path.abspath(path.curdir), 'galenapi', 'service')
+    return path.join(path.dirname(__file__), 'service')

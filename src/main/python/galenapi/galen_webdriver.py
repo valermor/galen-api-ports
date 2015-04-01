@@ -25,20 +25,20 @@ class GalenWebDriver(WebDriver):
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
         try:
-            self.thrift = ThriftFacade().initialize(remote_url)
-            remote_connection = ThriftRemoteConnection(remote_url, self.thrift)
+            self.thrift_client = ThriftFacade().initialize(remote_url)
+            remote_connection = ThriftRemoteConnection(remote_url, self.thrift_client)
             WebDriver.__init__(self, remote_connection, desired_capabilities,
                                browser_profile, proxy, keep_alive)
             remote_connection.set_session_id(self.session_id)
         except WebDriverException as e:
             logger.error(e.msg)
-            self.thrift.shut_service_if_inactive()
+            self.thrift_client.shut_service_if_inactive()
             raise e
 
     def quit(self):
         super(GalenWebDriver, self).quit()
-        self.thrift.shut_service_if_inactive()
-        self.thrift.close_connection()
+        self.thrift_client.shut_service_if_inactive()
+        self.thrift_client.close_connection()
 
 
 class ThriftRemoteConnection(RemoteConnection):
