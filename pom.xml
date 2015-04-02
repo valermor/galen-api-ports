@@ -58,6 +58,16 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <directory>target</directory>
+        <outputDirectory>target/classes</outputDirectory>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <testOutputDirectory>target/test-classes</testOutputDirectory>
+        <sourceDirectory>server/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>server/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -86,8 +96,7 @@
                 <artifactId>maven-thrift-plugin</artifactId>
                 <version>0.1.11</version>
                 <configuration>
-                    <!--<outputDirectory>${basedir}/src/main/java/galen/api/server/_thrift</outputDirectory>-->
-                    <!--<outputDirectory>${basedir}/src/main/java</outputDirectory>-->
+                    <thriftSourceRoot>${basedir}/thrift</thriftSourceRoot>
                 </configuration>
                 <executions>
                     <!--<execution>-->

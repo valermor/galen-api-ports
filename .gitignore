@@ -2,9 +2,7 @@
 **/.idea
 **/target
 *.iml
-.idea
-/src/main/java/galen/api/server/thrift
-/src/main/python/pythrift
-/src/main/resources
+/server/java/galen/api/server/thrift
+/py/galenapi/pythrift
 /bin
 .DS_Store

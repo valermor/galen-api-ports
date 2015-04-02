@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-python_project_root=src/main/python
+python_project_root=py
 project_root=${PWD##*/}
 
 echo "packaging python libs"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-service_folder=src/main/python/galenapi/service
+service_folder=py/galenapi/service
 
 ./update_thrift.sh
 
