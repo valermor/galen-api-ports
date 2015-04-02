@@ -60,6 +60,7 @@ class GalenApi(object):
         """
         if not self.thrift_client:
             raise IllegalMethodCallException("generate_report() must be called after check_layout()")
+        logger.info("Generating report in " + report_folder)
         self.thrift_client.generate_report(report_folder)
 
 
