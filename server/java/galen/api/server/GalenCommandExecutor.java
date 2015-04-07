@@ -1,5 +1,7 @@
 package galen.api.server;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import galen.api.server.thrift.*;
 import galen.api.server.thrift.Response;
 import galen.api.server.utils.StringUtils;
@@ -8,6 +10,8 @@ import net.mindengine.galen.reports.GalenTestInfo;
 import net.mindengine.galen.reports.HtmlReportBuilder;
 import net.mindengine.galen.reports.TestReport;
 import net.mindengine.galen.reports.model.LayoutReport;
+import net.mindengine.galen.reports.nodes.TestReportNode;
+import net.mindengine.galen.reports.nodes.TextReportNode;
 import org.apache.thrift.TException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -23,6 +27,7 @@ import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static galen.api.server.GsonUtils.getGson;
+import static galen.api.server.thrift.NodeType.LAYOUT;
 import static galen.api.server.thrift.ResponseValueType.string_cap;
 import static java.lang.String.format;
 import static org.openqa.selenium.remote.ErrorCodes.SESSION_NOT_CREATED;
@@ -102,9 +107,54 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     @Override
     public void append(String testName, ReportTree reportTree) throws TException {
         TestReport testReport = new TestReport();
-        //Build test report from reportTree
+        processNode(testReport, reportTree, reportTree.getRoot_id());
         GalenTestInfo galenTestInfo = GalenReportsContainer.get().registerTest(testName);
         galenTestInfo.setReport(testReport);
+    }
+
+    public TestReport processNode(TestReport testReport, ReportTree reportTree, final String parentNodeUniqueId) {
+        Iterable<ReportNode> childrenNodes = filterChildrenNodes(reportTree, parentNodeUniqueId);
+
+        for (ReportNode node : childrenNodes) {
+            if (node.getNodes_ids().size() == 0) {
+                switch (node.getType()) {
+                    case LAYOUT:
+                        testReport.layout(GalenReportsContainer.get().fetchLayoutReport(node.unique_id), node.getName());
+                        break;
+                    case TEXT:
+                        break;
+                    case NODE:
+                        if (node.getType().equals(LAYOUT)) {
+                            testReport.layout(GalenReportsContainer.get().fetchLayoutReport(node.unique_id), node.getName());
+                        } else if (node.getType().equals(NodeType.TEXT)) {
+                           testReport.addNode(new TextReportNode(testReport.getFileStorage(), node.name));
+                        } else {
+                            if (node.getStatus().equals(TestReportNode.Status.INFO.toString())) {
+                                testReport.info(node.getName());
+                            } else if (node.getStatus().equals(TestReportNode.Status.WARN.toString())) {
+                                testReport.warn(node.getName());
+                            } else if (node.getStatus().equals(TestReportNode.Status.ERROR.toString())) {
+                                testReport.error(node.getName());
+                            }
+                        }
+                        break;
+                }
+            } else {
+                testReport.sectionStart(node.getName());
+                processNode(testReport, reportTree, node.getUnique_id());
+                testReport.sectionEnd();
+            }
+        }
+        return testReport;
+    }
+
+    private Iterable<ReportNode> filterChildrenNodes(ReportTree reportTree, final String parentNodeUniqueId) {
+        return Iterables.filter(reportTree.getNodes().values(), new Predicate<ReportNode>() {
+            @Override
+            public boolean apply(ReportNode node) {
+                return node.getParent_id().equals(parentNodeUniqueId);
+            }
+        });
     }
 
     @Override

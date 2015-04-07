@@ -1,11 +1,11 @@
 import uuid
-from galenapi.galen_api import GalenApi, logger
-from galenapi.galen_webdriver import GalenWebDriver
+
 from galenapi.pythrift.ttypes import ReportTree, NodeType, ReportNode
 
-INFO = "Info"
-WARN = "Warn"
-ERROR = "Error"
+
+INFO = "info"
+WARN = "warn"
+ERROR = "error"
 
 
 class TestReport(object):
@@ -17,15 +17,15 @@ class TestReport(object):
         self.report.nodes = {}
         self.thrift_client = thrift_client
 
-    def add_node(self, node_tree_builder):
+    def add_report_node(self, node_tree_builder):
         node_tree = node_tree_builder.build()
         self._add_node_tree(node_tree, self.report.root_id)
         return self
 
-    def add_section(self, section):
-        pass
-
-    def add_layout_report(self, report_node):
+    def add_layout_report_node(self, name, report_node):
+        report_node.name = name
+        report_node.parent_id = self.report.root_id
+        report_node.nodes_ids = []
         self.report.nodes[report_node.unique_id] = report_node
         return self
 
@@ -40,11 +40,11 @@ class TestReport(object):
 
         else:
             self.report.nodes[node_tree.unique_id] = ReportNode(node_tree.unique_id, node_tree.name, node_tree.status,
-                                                                parent_id, None,  node_tree.attachment, node_tree.time,
+                                                                parent_id, [],  node_tree.attachment, node_tree.time,
                                                                 node_tree.node_type)
 
-    def append_report(self):
-        self.thrift_client.append_report(self.test_name, self.report)
+    def add(self):
+        self.thrift_client.add(self.test_name, self.report)
 
     def __str__(self):
         final_string = "Report root_id: " + self.report.root_id + "\n"

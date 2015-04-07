@@ -32,13 +32,13 @@ class HomePageLayoutTest(unittest.TestCase):
             layout_report_node = galen_api.check_layout(driver, from_specs_in_current_folder('specs')
                                                         .with_name('homePage.spec'), ['tablet', 'all'], None)
 
-            TestReport(driver.thrift_client, "test name")\
-                .add_node(error_node("1 - this is an error node")
+            TestReport(driver.thrift_client, "test_home_page")\
+                .add_report_node(error_node("1 - this is an error node")
                           .with_node(info_node("2 - this is info node")
                           .with_node(warn_node("3 - this is a warn")).with_node(error_node("4 - error"))
                           .with_node(error_node("5 - this is another error"))))\
-                .add_layout_report(layout_report_node)\
-                .append_report()
+                .add_layout_report_node("check homePage.spec", layout_report_node)\
+                .add()
 
             galen_api.generate_report(get_target_dir(PROJECT_NAME, "target/galen"))
         except Exception as e:

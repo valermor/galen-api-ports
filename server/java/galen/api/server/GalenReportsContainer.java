@@ -45,4 +45,8 @@ public class GalenReportsContainer {
     public void storeLayoutReport(String reportId, LayoutReport layoutReport) {
         reports.put(reportId, layoutReport);
     }
+
+    public LayoutReport fetchLayoutReport(String reportId) {
+        return reports.get(reportId);
+    }
 }
