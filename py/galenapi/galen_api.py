@@ -2,7 +2,7 @@ import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
 from galenapi.galen_webdriver import GalenWebDriver, CHROME
-from pythrift.ttypes import SpecNotFoundException
+from pythrift.ttypes import SpecNotFoundException, ReportNode, NodeType
 
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class GalenApi(object):
 
     def with_test_info(self, test_info):
         """
-        Test description that is used by report to identify the test being run.
+        Test description that is used by reports to identify the test being run.
         """
         self.test_info = test_info
         return self
@@ -42,25 +42,26 @@ class GalenApi(object):
         :param spec: Specs to be run on the page under test.
         :param included_tags: list of tags included in the check.
         :param excluded_tags: list of tags excluded from check.
-        :return: Number of errors found on running check of the given specs.
+        :return: ReportNode related to generated LayoutReport in the Galen Server.
         """
         if not isinstance(driver, GalenWebDriver):
             raise ValueError("Provided driver object is not an instance of GalenWebDriver")
         self.thrift_client = driver.thrift_client
         try:
-            return self.thrift_client.check_api(self.test_info, driver.session_id, spec, included_tags, excluded_tags)
+            layout_report_id = self.thrift_client.check_api(driver.session_id, spec, included_tags, excluded_tags)
+            return ReportNode(unique_id=layout_report_id, type=NodeType.LAYOUT)
         except SpecNotFoundException as e:
             self.thrift_client.shut_service_if_inactive()
             raise FileNotFoundError("Spec was not found: " + str(e.message))
 
     def generate_report(self, report_folder):
         """
-        Generate Galen report in the provided folder.
+        Generate Galen reports in the provided folder.
         :param report_folder: target folder.
         """
         if not self.thrift_client:
             raise IllegalMethodCallException("generate_report() must be called after check_layout()")
-        logger.info("Generating report in " + report_folder)
+        logger.info("Generating reports in " + report_folder)
         self.thrift_client.generate_report(report_folder)
 
 

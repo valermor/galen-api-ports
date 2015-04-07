@@ -30,7 +30,7 @@
         <dependency>
             <groupId>net.mindengine</groupId>
             <artifactId>galen</artifactId>
-            <version>1.5.3</version>
+            <version>1.6.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

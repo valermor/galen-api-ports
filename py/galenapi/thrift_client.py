@@ -64,12 +64,19 @@ class ThriftFacade(object):
         except TTransportException:
             pass
 
-    def check_api(self, test_name, driver_session_id, spec_name, included_tags, excluded_tags):
+    def check_api(self, driver_session_id, spec_name, included_tags, excluded_tags):
         try:
-            self.client.check_layout(test_name, driver_session_id, spec_name, included_tags, excluded_tags)
+            return self.client.check_layout(driver_session_id, spec_name, included_tags, excluded_tags)
         except SpecNotFoundException as e:
             logger.error(e.message)
             raise SpecNotFoundException(e)
+
+    def append_report(self, test_name, report):
+        try:
+            self.client.append(test_name, report)
+        except Exception as e:
+            logger.error(e)
+            raise e
 
     def generate_report(self, report_folder_path):
         self.client.generate_report(report_folder_path)
@@ -79,8 +86,10 @@ def start_galen_remote_api_service(server_port):
     """
     Start CommandExecutor thrift service on the given port.
     """
-    start_server(server_port)
+    # start_server(server_port)
+    pass
 
 
 def stop_galen_remote_api_service(server_port):
-    stop_server(server_port)
+    # stop_server(server_port)
+    pass

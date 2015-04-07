@@ -1,11 +1,9 @@
 package galen.api.server;
 
-import galen.api.server.thrift.GalenApiRemoteService;
-import galen.api.server.thrift.RemoteWebDriverException;
+import galen.api.server.thrift.*;
 import galen.api.server.thrift.Response;
-import galen.api.server.thrift.SpecNotFoundException;
+import galen.api.server.utils.StringUtils;
 import net.mindengine.galen.api.Galen;
-import net.mindengine.galen.parser.FileSyntaxException;
 import net.mindengine.galen.reports.GalenTestInfo;
 import net.mindengine.galen.reports.HtmlReportBuilder;
 import net.mindengine.galen.reports.TestReport;
@@ -84,22 +82,29 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     }
 
     @Override
-    public int check_layout(String testName, String driverSessionId, String specs, List<String> includedTags, List<String> excludedTags) throws SpecNotFoundException {
-        log.info(format("Executing check_layout for test " + testName + " with driver " + driverSessionId));
+    public String check_layout(String driverSessionId, String specs, List<String> includedTags, List<String> excludedTags) throws SpecNotFoundException {
+        log.info(format("Executing check_layout for spec " + specs + " with driver " + driverSessionId));
         WebDriver driver = DriversPool.get().getBySessionId(driverSessionId);
+        String reportId = null;
         try {
-            TestReport testReport = GalenReportsContainer.get().registerTest(testName);
             LayoutReport layoutReport = Galen.checkLayout(driver, specs, includedTags, excludedTags, new Properties(), null);
-            testReport.layout(layoutReport, "Check layout " + specs);
-            GalenReportsContainer.get().updateEndTime(testName);
-            return layoutReport.errors();
+            reportId = StringUtils.generateUniqueString();
+            GalenReportsContainer.get().storeLayoutReport(reportId, layoutReport);
         } catch (FileNotFoundException e) {
             log.error("Could not find spec file " + specs);
             throw new SpecNotFoundException(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return 0;
+        return reportId;
+    }
+
+    @Override
+    public void append(String testName, ReportTree reportTree) throws TException {
+        TestReport testReport = new TestReport();
+        //Build test report from reportTree
+        GalenTestInfo galenTestInfo = GalenReportsContainer.get().registerTest(testName);
+        galenTestInfo.setReport(testReport);
     }
 
     @Override

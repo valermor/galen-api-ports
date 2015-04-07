@@ -2,11 +2,10 @@ package galen.api.server;
 
 import net.mindengine.galen.reports.GalenTestInfo;
 import net.mindengine.galen.reports.TestReport;
+import net.mindengine.galen.reports.model.LayoutReport;
 
 import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static net.mindengine.galen.reports.GalenTestInfo.fromString;
 
@@ -14,6 +13,7 @@ public class GalenReportsContainer {
 
     private static final GalenReportsContainer _instance = new GalenReportsContainer();
     private final List<GalenTestInfo> tests = new LinkedList<GalenTestInfo>();
+    private final Map<String, LayoutReport> reports = new HashMap<String, LayoutReport>();
 
     private GalenReportsContainer() {
     }
@@ -22,11 +22,11 @@ public class GalenReportsContainer {
         return _instance;
     }
 
-    public TestReport registerTest(String testInfo) {
+    public GalenTestInfo registerTest(String testInfo) {
         GalenTestInfo galenTestInfo = fromString(testInfo);
 
         tests.add(galenTestInfo);
-        return galenTestInfo.getReport();
+        return galenTestInfo;
     }
 
     public void updateEndTime(String actualTestInfo) {
@@ -42,7 +42,7 @@ public class GalenReportsContainer {
         return tests;
     }
 
-    private String createNameFromTestInfo(Method method, String config) {
-        return method.getDeclaringClass().getName()+ "_" + method.getName() + "_" + config;
+    public void storeLayoutReport(String reportId, LayoutReport layoutReport) {
+        reports.put(reportId, layoutReport);
     }
 }
