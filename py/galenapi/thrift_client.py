@@ -71,7 +71,7 @@ class ThriftFacade(object):
             logger.error(e.message)
             raise SpecNotFoundException(e)
 
-    def append_report(self, test_name, report):
+    def finalize(self, test_name, report):
         try:
             self.client.append(test_name, report)
         except Exception as e:
@@ -86,10 +86,8 @@ def start_galen_remote_api_service(server_port):
     """
     Start CommandExecutor thrift service on the given port.
     """
-    # start_server(server_port)
-    pass
+    start_server(server_port)
 
 
 def stop_galen_remote_api_service(server_port):
-    # stop_server(server_port)
-    pass
+    stop_server(server_port)

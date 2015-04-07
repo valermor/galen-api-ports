@@ -17,6 +17,8 @@ class TestReport(object):
         self.report.nodes = {}
         self.thrift_client = thrift_client
 
+        thrift_client.register_test(test_name)
+
     def add_report_node(self, node_tree_builder):
         node_tree = node_tree_builder.build()
         self._add_node_tree(node_tree, self.report.root_id)
@@ -43,8 +45,8 @@ class TestReport(object):
                                                                 parent_id, [],  node_tree.attachment, node_tree.time,
                                                                 node_tree.node_type)
 
-    def add(self):
-        self.thrift_client.add(self.test_name, self.report)
+    def finalize(self):
+        self.thrift_client.finalize(self.test_name, self.report)
 
     def __str__(self):
         final_string = "Report root_id: " + self.report.root_id + "\n"
