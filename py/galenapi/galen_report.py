@@ -24,12 +24,12 @@ class TestReport(object):
         self._add_node_tree(node_tree, self.report.root_id)
         return self
 
-    def add_layout_report_node(self, name, report_node):
-        report_node.name = name
-        report_node.parent_id = self.report.root_id
-        report_node.nodes_ids = []
-        self.report.nodes[report_node.unique_id] = report_node
+    def add_layout_report_node(self, name, layout_report):
+        self.report.nodes[layout_report.unique_id] = ReportNode(unique_id=layout_report.unique_id, name=name,
+                                                                parent_id=self.report.root_id, nodes_ids=[],
+                                                                node_type=NodeType.LAYOUT)
         return self
+
 
     def _add_node_tree(self, node_tree, parent_id):
         if node_tree.has_children():

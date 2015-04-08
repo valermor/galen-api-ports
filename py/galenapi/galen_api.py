@@ -2,6 +2,7 @@ import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
 from galenapi.galen_webdriver import GalenWebDriver
+from galenapi.pythrift.ttypes import LayoutCheckReport
 from pythrift.ttypes import SpecNotFoundException, ReportNode, NodeType
 
 
@@ -34,14 +35,13 @@ class GalenApi(object):
         :param spec: Specs to be run on the page under test.
         :param included_tags: list of tags included in the check.
         :param excluded_tags: list of tags excluded from check.
-        :return: ReportNode related to generated LayoutReport in the Galen Server.
+        :return: CheckLayoutReport mapping info from the generated LayoutReport object in the Galen Server.
         """
         if not isinstance(driver, GalenWebDriver):
             raise ValueError("Provided driver object is not an instance of GalenWebDriver")
         self.thrift_client = driver.thrift_client
         try:
-            layout_report_id = self.thrift_client.check_api(driver.session_id, spec, included_tags, excluded_tags)
-            return ReportNode(unique_id=layout_report_id, type=NodeType.LAYOUT)
+            return self.thrift_client.check_layout(driver.session_id, spec, included_tags, excluded_tags)
         except SpecNotFoundException as e:
             self.thrift_client.shut_service_if_inactive()
             raise FileNotFoundError("Spec was not found: " + str(e.message))
@@ -55,3 +55,4 @@ class GalenApi(object):
             raise IllegalMethodCallException("generate_report() must be called after check_layout()")
         logger.info("Generating reports in " + report_folder)
         self.thrift_client.generate_report(report_folder)
+        self.thrift_client.shut_service_if_inactive()

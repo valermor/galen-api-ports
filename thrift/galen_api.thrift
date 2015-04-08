@@ -38,7 +38,13 @@ struct ReportNode {
     5:list<string> nodes_ids
     6:list<string> attachment
     8:string time
-    9:NodeType type
+    9:NodeType node_type
+}
+
+struct LayoutCheckReport {
+    1:string unique_id
+    4:i32 errors
+    5:i32 warnings
 }
 
 struct ReportTree {
@@ -55,7 +61,7 @@ service GalenApiRemoteService {
     //Galen reports
     void register_test(1:string test_name),
     void append(1:string test_name, 2:ReportTree report_tree),
-    string check_layout(1:string webdriver_session_id, 2:string specs, 3:tags included_tags, 4:tags excluded_tags) throws (1:SpecNotFoundException exc),
+    LayoutCheckReport check_layout(1:string webdriver_session_id, 2:string specs, 3:tags included_tags, 4:tags excluded_tags) throws (1:SpecNotFoundException exc),
     void generate_report(1:string report_folder_path),
 
     //Service lifecycle

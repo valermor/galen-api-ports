@@ -110,13 +110,14 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
      * @throws SpecNotFoundException
      */
     @Override
-    public String check_layout(String driverSessionId, String specs, List<String> includedTags, List<String> excludedTags)
+    public LayoutCheckReport check_layout(String driverSessionId, String specs, List<String> includedTags, List<String> excludedTags)
             throws SpecNotFoundException {
+        LayoutReport layoutReport = new LayoutReport();
         log.info(format("Executing check_layout for spec " + specs + " with driver " + driverSessionId));
         WebDriver driver = DriversPool.get().getBySessionId(driverSessionId);
         String reportId = null;
         try {
-            LayoutReport layoutReport = Galen.checkLayout(driver, specs, includedTags, excludedTags, new Properties(),
+            layoutReport = Galen.checkLayout(driver, specs, includedTags, excludedTags, new Properties(),
                     null);
             reportId = StringUtils.generateUniqueString();
             GalenReportsContainer.get().storeLayoutReport(reportId, layoutReport);
@@ -126,7 +127,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return reportId;
+        return new LayoutCheckReport(reportId, layoutReport.errors(), layoutReport.warnings());
     }
 
     /**

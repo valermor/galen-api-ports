@@ -37,8 +37,6 @@ class GalenWebDriver(WebDriver):
 
     def quit(self):
         super(GalenWebDriver, self).quit()
-        self.thrift_client.shut_service_if_inactive()
-        self.thrift_client.close_connection()
 
 
 class ThriftRemoteConnection(RemoteConnection):

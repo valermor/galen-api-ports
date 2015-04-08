@@ -66,8 +66,7 @@ class ThriftFacade(object):
     def register_test(self, test_name):
         self.client.register_test(test_name)
 
-
-    def check_api(self, driver_session_id, spec_name, included_tags, excluded_tags):
+    def check_layout(self, driver_session_id, spec_name, included_tags, excluded_tags):
         try:
             return self.client.check_layout(driver_session_id, spec_name, included_tags, excluded_tags)
         except SpecNotFoundException as e:
