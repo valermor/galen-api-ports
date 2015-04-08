@@ -14,8 +14,7 @@ from galenapi.remote_service_lifecycle import start_server, stop_server
 GALEN_REMOTE_API_SERVICE_PORT = 9092
 
 """ RESILIENCE_INTERVAL specifies after which amount of time (in seconds) we can assume there is no activity in the remote
-    server so that we are allowed to quit it.
-"""
+    server so that we are allowed to quit it."""
 RESILIENCE_INTERVAL = 5
 
 logger = logging.getLogger(__name__)

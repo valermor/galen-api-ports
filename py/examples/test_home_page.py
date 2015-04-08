@@ -5,7 +5,7 @@ import unittest
 from galenapi.galen_api import GalenApi, logger
 from galenapi.galen_webdriver import GalenWebDriver
 from galenapi.utils.specs import from_specs_in_current_folder
-from reports.galen_report import TestReport, error_node, info_node, warn_node
+from galenapi.galen_report import TestReport, error_node, info_node, warn_node
 
 
 PROJECT_NAME = 'py'
@@ -38,7 +38,7 @@ class HomePageLayoutTest(unittest.TestCase):
                           .with_node(warn_node("3 - this is a warn")).with_node(error_node("4 - error"))
                           .with_node(error_node("5 - this is another error"))))\
                 .add_layout_report_node("check homePage.spec", layout_report_node)\
-                .add()
+                .finalize()
 
             galen_api.generate_report(get_target_dir(PROJECT_NAME, "target/galen"))
         except Exception as e:

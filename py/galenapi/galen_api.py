@@ -1,7 +1,7 @@
 import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
-from galenapi.galen_webdriver import GalenWebDriver, CHROME
+from galenapi.galen_webdriver import GalenWebDriver
 from pythrift.ttypes import SpecNotFoundException, ReportNode, NodeType
 
 
@@ -24,15 +24,7 @@ class GalenApi(object):
     """
 
     def __init__(self):
-        self.test_info = None
         self.thrift_client = None
-
-    def with_test_info(self, test_info):
-        """
-        Test description that is used by reports to identify the test being run.
-        """
-        self.test_info = test_info
-        return self
 
     def check_layout(self, driver, spec, included_tags, excluded_tags):
         #TODO add multiple specs.
@@ -63,25 +55,3 @@ class GalenApi(object):
             raise IllegalMethodCallException("generate_report() must be called after check_layout()")
         logger.info("Generating reports in " + report_folder)
         self.thrift_client.generate_report(report_folder)
-
-
-def run_galen_test():
-    driver = None
-    try:
-        driver = GalenWebDriver("http://localhost:4444/wd/hub", desired_capabilities=CHROME)
-        driver.get("http://www.skyscanner.net/hotels")
-        driver.set_window_size(720, 1024)
-
-        galen_api = GalenApi().with_test_info('a Galen test')
-        errors = galen_api.check_layout(driver, 'homePage.spec', ['phone'], None)
-        if errors != 0:
-            galen_api.generate_report("target/galen")
-    except Exception as e:
-        logger.error(e.message)
-        raise e
-    finally:
-            driver.quit()
-
-
-if __name__ == '__main__':
-    run_galen_test()
