@@ -1,10 +1,13 @@
 import commands
 import logging
 from os import path, popen
+from random import random
 import subprocess
+from time import sleep
 
 from galenapi.remote_service_logging import RemoteServiceStreamListener, RemoteServiceLogger
 
+MAX_SLOW_START_DELAY = 1
 
 GALEN_REMOTE_API_SERVER_JAR = 'galen-api-server.jar'
 
@@ -27,6 +30,7 @@ def start_server(server_port=DEFAULT_THRIFT_SERVER_PORT):
     Starts GalenRemoteApi service.
     """
     # TODO Portability on non-Mac OSs
+    slow_start(MAX_SLOW_START_DELAY)
     if not server_running(server_port):
         command = "java -jar {path}/{jar_file} -r {port}".format(path=locate_server_path(),
                                                                  jar_file=GALEN_REMOTE_API_SERVER_JAR,
@@ -55,3 +59,11 @@ def stop_server(server_port):
 
 def locate_server_path():
     return path.join(path.dirname(__file__), 'service')
+
+
+def slow_start(max_delay):
+    """
+    It will add a random delay of max_delay ms to prevent concurrent threads to attempt to initialize the server
+      simultaneously.
+    """
+    sleep(max_delay * random())

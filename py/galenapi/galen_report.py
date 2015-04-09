@@ -1,6 +1,7 @@
 import uuid
 
 from galenapi.pythrift.ttypes import ReportTree, NodeType, ReportNode
+from galenapi.thrift_client import ThriftFacade
 
 
 INFO = "info"
@@ -10,14 +11,16 @@ ERROR = "error"
 
 class TestReport(object):
 
-    def __init__(self, thrift_client, test_name):
+    def __init__(self, test_name, thrift_client=None):
         super(TestReport, self).__init__()
         self.test_name = test_name
         self.report = ReportTree(root_id=generate_random_string())
         self.report.nodes = {}
         self.thrift_client = thrift_client
+        if not self.thrift_client:
+            self.thrift_client = ThriftFacade()
 
-        thrift_client.register_test(test_name)
+        self.thrift_client.register_test(test_name)
 
     def add_report_node(self, node_tree_builder):
         node_tree = node_tree_builder.build()
@@ -29,7 +32,6 @@ class TestReport(object):
                                                                 parent_id=self.report.root_id, nodes_ids=[],
                                                                 node_type=NodeType.LAYOUT)
         return self
-
 
     def _add_node_tree(self, node_tree, parent_id):
         if node_tree.has_children():
