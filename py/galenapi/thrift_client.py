@@ -11,7 +11,7 @@ from pythrift.ttypes import SpecNotFoundException
 from galenapi.remote_service_lifecycle import start_server, stop_server
 
 
-GALEN_REMOTE_API_SERVICE_PORT = 9092
+GALEN_REMOTE_API_SERVICE_DEFAULT_PORT = 9092
 
 """ RESILIENCE_INTERVAL specifies after which amount of time (in seconds) we can assume there is no activity in the remote
     server so that we are allowed to quit it."""
@@ -26,18 +26,18 @@ class ThriftFacade(object):
     implementation and exposes the methods needed by the command_executor implemented in GalenRemoteConnection as well
     as the Galen API.
     """
-    def __init__(self):
+    def __init__(self, service_port=GALEN_REMOTE_API_SERVICE_DEFAULT_PORT):
         try:
-            start_galen_remote_api_service(GALEN_REMOTE_API_SERVICE_PORT)
+            start_galen_remote_api_service(service_port)
             sleep(3) #TODO Implement wait until server is running
-            socket = TSocket.TSocket('localhost', GALEN_REMOTE_API_SERVICE_PORT)
+            socket = TSocket.TSocket('localhost', service_port)
             self.transport = TTransport.TFramedTransport(socket)
             protocol_factory = TBinaryProtocol.TBinaryProtocolFactory()
             protocol = protocol_factory.getProtocol(self.transport)
             self.client = GalenApiRemoteService.Client(protocol)
             self.transport.open()
         except Thrift.TException, tx:
-            stop_galen_remote_api_service(GALEN_REMOTE_API_SERVICE_PORT)
+            stop_galen_remote_api_service(GALEN_REMOTE_API_SERVICE_DEFAULT_PORT)
             raise Exception('%s' % (tx.message))
 
     def initialize(self, remote_url):
