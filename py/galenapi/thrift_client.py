@@ -22,8 +22,9 @@ logger = logging.getLogger(__name__)
 
 class ThriftFacade(object):
     """
-    This class implements a facade of the thrift_generated client which hides all the details of the thrift implementation
-    and exposes the methods needed by the command_executor implemented in GalenRemoteConnection as well as the Galen API.
+    This class implements a facade of the thrift_generated client which hides all the details of the thrift
+    implementation and exposes the methods needed by the command_executor implemented in GalenRemoteConnection as well
+    as the Galen API.
     """
     def __init__(self):
         try:

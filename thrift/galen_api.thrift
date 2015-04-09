@@ -54,11 +54,11 @@ struct ReportTree {
 
 
 service GalenApiRemoteService {
-	//WebDriver Remote Executor service
+	//WebDriver JsonWire over Thrift
     void initialize(1:string remote_server_addr),
     Response execute(1:string session_id, 2:string command, 3:string params) throws (1:RemoteWebDriverException exc),
 
-    //Galen reports
+    //Galen check and report API
     void register_test(1:string test_name),
     void append(1:string test_name, 2:ReportTree report_tree),
     LayoutCheckReport check_layout(1:string webdriver_session_id, 2:string specs, 3:tags included_tags, 4:tags excluded_tags) throws (1:SpecNotFoundException exc),

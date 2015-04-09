@@ -2,8 +2,7 @@ import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
 from galenapi.galen_webdriver import GalenWebDriver
-from galenapi.pythrift.ttypes import LayoutCheckReport
-from pythrift.ttypes import SpecNotFoundException, ReportNode, NodeType
+from pythrift.ttypes import SpecNotFoundException
 
 
 logger = logging.getLogger(__name__)
@@ -43,7 +42,6 @@ class GalenApi(object):
         try:
             return self.thrift_client.check_layout(driver.session_id, spec, included_tags, excluded_tags)
         except SpecNotFoundException as e:
-            self.thrift_client.shut_service_if_inactive()
             raise FileNotFoundError("Spec was not found: " + str(e.message))
 
     def generate_report(self, report_folder):

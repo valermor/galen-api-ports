@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 class GalenWebDriver(WebDriver):
     """
-    This is implementation of RemoteWebDriver Client over Thrift. The commands to be sent to a remote Grid are intercepted
-    and sent across the Thrift interface.
+    This is implementation of RemoteWebDriver Client which uses JsonWire protocol over Thrift. The commands to be sent
+    to a remote Grid are intercepted and sent across the Thrift interface.
     Internally, GalenWebDriver makes use of GalenRemoteConnection, an ad-hoc command_executor which sends commands over
     the Thrift interface.
     """
@@ -41,7 +41,7 @@ class GalenWebDriver(WebDriver):
 
 class ThriftRemoteConnection(RemoteConnection):
     """
-    Subclass of RemoteConnection which execute commands over the Thrift interface.
+    Subclass of RemoteConnection which implements JsonWire protocol over Thrift Interface.
     """
     def __init__(self, remote_server_addr, thrift_client, keep_alive=False):
         RemoteConnection.__init__(self, remote_server_addr, keep_alive)
