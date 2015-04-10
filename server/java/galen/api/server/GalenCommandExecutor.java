@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static galen.api.server.GsonUtils.getGson;
 import static galen.api.server.thrift.ResponseValueType.map_cap;
 import static galen.api.server.thrift.ResponseValueType.string_cap;
 import static galen.api.server.utils.ReportUtils.buildTestReportFromReportTree;
