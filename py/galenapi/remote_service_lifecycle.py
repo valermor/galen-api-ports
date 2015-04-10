@@ -63,7 +63,7 @@ def locate_server_path():
 
 def slow_start(max_delay):
     """
-    It will add a random delay of max_delay ms to prevent concurrent threads to attempt to initialize the server
+    It adds a random delay of max_delay ms to prevent concurrent threads to attempt to initialize the server
       simultaneously.
     """
     sleep(max_delay * random())

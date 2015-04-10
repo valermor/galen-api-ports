@@ -7,9 +7,10 @@ from time import sleep
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
+from thrift.Thrift import TType
 
-from pythrift.ttypes import RemoteWebDriverException
-from galenapi.thrift_client import ThriftFacade
+from pythrift.ttypes import RemoteWebDriverException, ResponseValueType
+from galenapi.thrift_client import ThriftClient
 
 
 logger = logging.getLogger(__name__)
@@ -25,14 +26,14 @@ class GalenWebDriver(WebDriver):
     def __init__(self, remote_url='http://127.0.0.1:4444/wd/hub', desired_capabilities=None, browser_profile=None,
                  proxy=None, keep_alive=False):
         try:
-            self.thrift_client = ThriftFacade().initialize(remote_url)
+            self.thrift_client = ThriftClient().initialize(remote_url)
             remote_connection = ThriftRemoteConnection(remote_url, self.thrift_client)
             WebDriver.__init__(self, remote_connection, desired_capabilities,
                                browser_profile, proxy, keep_alive)
             remote_connection.set_session_id(self.session_id)
         except WebDriverException as e:
             logger.error(e.msg)
-            self.thrift_client.shut_service_if_inactive()
+            self.thrift_client.quit_service_if_inactive()
             raise e
 
     def quit(self):
@@ -61,8 +62,11 @@ class ThriftRemoteConnection(RemoteConnection):
             data = json.dumps(params)
 
             response = self.thrift_client.execute(self.session_id, command, data)
-            return {'status': response.status, 'sessionId': response.session_id, 'state': response.state,
-                    'value': response.value.string_cap}
+            response_value = ''
+            if response.value:
+                if response.value.map_cap:
+                    response_value = response.value.map_cap
+            return dict(status=response.status, sessionId=response.session_id, state=response.state, value=response_value)
         except RemoteWebDriverException as e:
             raise WebDriverException(e.message)
 

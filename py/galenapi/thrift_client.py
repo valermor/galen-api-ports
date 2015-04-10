@@ -1,4 +1,5 @@
 import logging
+import os
 from time import sleep
 
 from thrift import Thrift
@@ -13,18 +14,16 @@ from galenapi.remote_service_lifecycle import start_server, stop_server
 
 GALEN_REMOTE_API_SERVICE_DEFAULT_PORT = 9092
 
-""" RESILIENCE_INTERVAL specifies after which amount of time (in seconds) we can assume there is no activity in the remote
-    server so that we are allowed to quit it."""
+""" RESILIENCE_INTERVAL specifies after which amount of time (in seconds) we can assume there is no activity in the
+    remote server so that we are allowed to quit it."""
 RESILIENCE_INTERVAL = 5
 
 logger = logging.getLogger(__name__)
 
 
-class ThriftFacade(object):
+class ThriftClient(object):
     """
-    This class implements a facade of the thrift_generated client which hides all the details of the thrift
-    implementation and exposes the methods needed by the command_executor implemented in GalenRemoteConnection as well
-    as the Galen API.
+    Facade class providing access to services exposed by Thrift interface hiding all complex details.
     """
     def __init__(self, service_port=GALEN_REMOTE_API_SERVICE_DEFAULT_PORT):
         try:
@@ -47,10 +46,7 @@ class ThriftFacade(object):
     def execute(self, session_id, command, request_params):
         return self.client.execute(session_id, command, request_params)
 
-    def close_connection(self):
-        self.transport.close()
-
-    def shut_service_if_inactive(self):
+    def quit_service_if_inactive(self):
         sleep(RESILIENCE_INTERVAL)
         if self.get_active_drivers() == 0:
             self.shut_service()
@@ -87,10 +83,15 @@ class ThriftFacade(object):
 
 def start_galen_remote_api_service(server_port):
     """
-    Start CommandExecutor thrift service on the given port.
+    Start Galen API service on the given port.
     """
-    start_server(server_port)
+    if os.getenv('SERVER_ALWAYS_ON', 'False') is 'False':
+        start_server(server_port)
 
 
 def stop_galen_remote_api_service(server_port):
-    stop_server(server_port)
+    """
+    Stops Galen API service on the given port.
+    """
+    if os.getenv('SERVER_ALWAYS_ON', 'False') is 'False':
+        stop_server(server_port)

@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static galen.api.server.GsonUtils.getGson;
+import static galen.api.server.thrift.ResponseValueType.map_cap;
 import static galen.api.server.thrift.ResponseValueType.string_cap;
 import static galen.api.server.utils.ReportUtils.buildTestReportFromReportTree;
 import static java.lang.String.format;
@@ -44,7 +44,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
      * @param sessionId WebDriver SessionId.
      * @param name Command name.
      * @param params Command params.
-     * @return an instance of org.openqa.selenium.remote.Response
+     * @return an instance of {@link org.openqa.selenium.remote.Response}
      * @throws TException
      */
     @Override
@@ -82,8 +82,12 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                 if (name.equals(DriverCommand.QUIT)) {
                     DriversPool.get().removeDriverBySessionId(sessionId);
                 }
-                return new Response(string_cap(getGson().toJson(response.getValue())), response.getSessionId(),
-                        response.getStatus(), response.getState());
+                ResponseValueType responseValue = null;
+                Object value = response.getValue();
+                if (value instanceof Map) {
+                    responseValue = map_cap((Map<String, String>) value);
+                }
+                return new Response(responseValue, response.getSessionId(), response.getStatus(), response.getState());
             }
         } catch (IOException e) {
             e.printStackTrace();

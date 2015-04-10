@@ -2,14 +2,14 @@ import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
 from galenapi.galen_webdriver import GalenWebDriver
-from galenapi.thrift_client import ThriftFacade
+from galenapi.thrift_client import ThriftClient
 from pythrift.ttypes import SpecNotFoundException
 
 
 logger = logging.getLogger(__name__)
 
 
-class GalenApi(object):
+class Galen(object):
     """
     Galen API class.
 
@@ -54,9 +54,9 @@ class GalenApi(object):
             raise IllegalMethodCallException("generate_report() must be called after check_layout()")
         logger.info("Generating reports in " + report_folder)
         self.thrift_client.generate_report(report_folder)
-        self.thrift_client.shut_service_if_inactive()
+        self.thrift_client.quit_service_if_inactive()
 
 
 def generate_galen_report(report_folder):
-    thrift_client = ThriftFacade()
-    GalenApi(thrift_client).generate_report(report_folder)
+    thrift_client = ThriftClient()
+    Galen(thrift_client).generate_report(report_folder)

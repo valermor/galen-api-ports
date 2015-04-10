@@ -1,7 +1,7 @@
 import uuid
 
 from galenapi.pythrift.ttypes import ReportTree, NodeType, ReportNode
-from galenapi.thrift_client import ThriftFacade
+from galenapi.thrift_client import ThriftClient
 
 
 INFO = "info"
@@ -18,7 +18,7 @@ class TestReport(object):
         self.report.nodes = {}
         self.thrift_client = thrift_client
         if not self.thrift_client:
-            self.thrift_client = ThriftFacade()
+            self.thrift_client = ThriftClient()
 
         self.thrift_client.register_test(test_name)
 
@@ -129,6 +129,7 @@ class Node(object):
 class TextNodeBuilder(NodeBuilder):
     def __init__(self):
         super(TextNodeBuilder, self).__init__()
+
 
 def generate_random_string():
     return str(uuid.uuid4()).replace('-', '')

@@ -2,7 +2,7 @@ import os.path
 import re
 import unittest
 
-from galenapi.galen_api import GalenApi, logger
+from galenapi.galen_api import Galen, logger
 from galenapi.galen_webdriver import GalenWebDriver
 from galenapi.utils.specs import from_specs_in_current_folder
 from galenapi.galen_report import TestReport, error_node, info_node, warn_node
@@ -28,7 +28,7 @@ class HomePageLayoutTest(unittest.TestCase):
             driver.get("http://galenframework.com/")
             driver.set_window_size(1024, 724)
 
-            galen_api = GalenApi()
+            galen_api = Galen()
             layout_report_node = galen_api.check_layout(driver, from_specs_in_current_folder('specs')
                                                         .with_name('homePage.spec'), ['tablet', 'all'], None)
 
