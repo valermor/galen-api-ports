@@ -2,7 +2,7 @@
 **/.idea
 **/target
 *.iml
-/server/java/galen/api/server/thrift
+/server/main/java/galen/api/server/thrift
 /py/galenapi/service/*
 /py/galenapi/pythrift
 /py/dist

@@ -13,7 +13,6 @@ exception RemoteWebDriverException {
 
 union ResponseValueType {
 	1:string string_cap
-	2:bool bool_cap
 	3:map<string, string> map_cap
 }
 

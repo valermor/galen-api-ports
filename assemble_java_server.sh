@@ -1,6 +1,6 @@
 #!/bin/sh
 
-java_target_folder=./server/java/galen/api/server
+java_target_folder=./server/main/java/galen/api/server
 target_java_thrift=${java_target_folder}/thrift
 gen_thrift_files_folder=./target/generated-sources/thrift/galen/api/server
 destination_server_folder=bin
