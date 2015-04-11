@@ -10,12 +10,11 @@ ERROR = "error"
 
 
 class TestReport(object):
-
     def __init__(self, test_name, thrift_client=None):
         super(TestReport, self).__init__()
         self.test_name = test_name
         self.report = ReportTree(root_id=generate_random_string())
-        self.report.nodes = {}
+        self.report.nodes = []
         self.thrift_client = thrift_client
         if not self.thrift_client:
             self.thrift_client = ThriftClient()
@@ -28,33 +27,32 @@ class TestReport(object):
         return self
 
     def add_layout_report_node(self, name, layout_report):
-        self.report.nodes[layout_report.unique_id] = ReportNode(unique_id=layout_report.unique_id, name=name,
-                                                                parent_id=self.report.root_id, nodes_ids=[],
-                                                                node_type=NodeType.LAYOUT)
+        self.report.nodes.append(
+            ReportNode(unique_id=layout_report.unique_id, name=name, parent_id=self.report.root_id, nodes_ids=[],
+                       node_type=NodeType.LAYOUT))
         return self
 
     def _add_node_tree(self, node_tree, parent_id):
         if node_tree.has_children():
             for node in node_tree.children:
                 self._add_node_tree(node, node_tree.unique_id)
-            self.report.nodes[node_tree.unique_id] = ReportNode(node_tree.unique_id, node_tree.name, node_tree.status,
-                                                                parent_id, [c.unique_id for c in node_tree.children],
-                                                                node_tree.attachment, node_tree.time,
-                                                                node_tree.node_type)
+            self.report.nodes.append(ReportNode(node_tree.unique_id, node_tree.name, node_tree.status, parent_id,
+                                                 [c.unique_id for c in node_tree.children], node_tree.attachment,
+                                                 node_tree.time, node_tree.node_type))
 
         else:
-            self.report.nodes[node_tree.unique_id] = ReportNode(node_tree.unique_id, node_tree.name, node_tree.status,
-                                                                parent_id, [],  node_tree.attachment, node_tree.time,
-                                                                node_tree.node_type)
+            self.report.nodes.append(
+                ReportNode(node_tree.unique_id, node_tree.name, node_tree.status, parent_id, [], node_tree.attachment,
+                           node_tree.time, node_tree.node_type))
 
     def finalize(self):
         self.thrift_client.finalize(self.test_name, self.report)
 
     def __str__(self):
         final_string = "Report root_id: " + self.report.root_id + "\n"
-        for node_key in self.report.nodes.keys():
-            final_string += "has node with id: " + self.report.nodes[node_key].unique_id + "\n"
-            final_string += repr(self.report.nodes[node_key]) + "\n"
+        for node in self.report.nodes:
+            final_string += "has node with id: " + node.unique_id + "\n"
+            final_string += repr(node) + "\n"
         return final_string
 
 
@@ -71,7 +69,6 @@ def error_node(name):
 
 
 class NodeBuilder(object):
-
     def __init__(self):
         super(NodeBuilder, self).__init__()
         self.name = None
@@ -111,7 +108,6 @@ class NodeBuilder(object):
 
 
 class Node(object):
-
     def __init__(self, name, status, attachment, time, child_nodes, node_type=NodeType.NODE):
         self.unique_id = generate_random_string()
         self.name = name

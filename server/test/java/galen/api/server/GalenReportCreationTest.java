@@ -10,10 +10,7 @@ import net.mindengine.galen.reports.nodes.TestReportNode;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -34,33 +31,34 @@ public class GalenReportCreationTest {
 
     /**
      * Structure of the sample tree for testing.
-     *
-     *          root
-     *        /      \
-     *       1e       2i
-     *      / \      /
-     *     3i  4w   5w
-     *              |
-     *              6e
-     *
-     *
+     * <p/>
+     * root
+     * /      \
+     * 1e       2i
+     * / \      /
+     * 3i  4w   5w
+     * |
+     * 6e
      */
-  @BeforeMethod
+    @BeforeMethod
     public void setUp() throws Exception {
-        Map<String, ReportNode> nodes = new HashMap<String, ReportNode>();
-        nodes.put(firstNodeId, new ReportNode(firstNodeId, "first node", "error", rootId, Lists.newArrayList(thirdNodeId,
-                fourthNodeId), null, new Date().toString(), NodeType.NODE));
-        nodes.put(secondNodeId, new ReportNode(secondNodeId, "second node", "info", rootId, Lists.newArrayList(fifthNodeId),
+        ArrayList<ReportNode> nodes = new ArrayList<ReportNode>();
+        nodes.add(new ReportNode(firstNodeId, "first node", "error", rootId, Lists.newArrayList(thirdNodeId, fourthNodeId),
                 null, new Date().toString(), NodeType.NODE));
-        nodes.put(thirdNodeId, new ReportNode(thirdNodeId, "third node", "info", firstNodeId, emptyList, null, new Date().toString(), NodeType.NODE));
-        nodes.put(fourthNodeId, new ReportNode(fourthNodeId, "fourth node", "warn", firstNodeId, emptyList, null, new Date().toString(), NodeType.NODE));
-        nodes.put(fifthNodeId, new ReportNode(fifthNodeId, "fifth node", "warn", secondNodeId, Lists.newArrayList(sixthNodeId),
-                null, new Date().toString(), NodeType.NODE));
-        nodes.put(sixthNodeId, new ReportNode(sixthNodeId, "sixth node", "error", fifthNodeId, emptyList, null, new Date().toString(), NodeType.NODE));
+        nodes.add(new ReportNode(secondNodeId, "second node", "info", rootId, Lists.newArrayList(fifthNodeId), null,
+                new Date().toString(), NodeType.NODE));
+        nodes.add(new ReportNode(thirdNodeId, "third node", "info", firstNodeId, emptyList, null, new Date().toString(),
+                NodeType.NODE));
+        nodes.add(new ReportNode(fourthNodeId, "fourth node", "warn", firstNodeId, emptyList, null, new Date().toString(),
+                NodeType.NODE));
+        nodes.add(new ReportNode(fifthNodeId, "fifth node", "warn", secondNodeId, Lists.newArrayList(sixthNodeId), null,
+                new Date().toString(), NodeType.NODE));
+        nodes.add(new ReportNode(sixthNodeId, "sixth node", "error", fifthNodeId, emptyList, null, new Date().toString(),
+                NodeType.NODE));
         reportTree = new ReportTree(rootId, nodes);
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void reportHasAllNodesInCorrectOrder() throws Exception {
         TestReport testReport = new TestReport();
         ReportUtils.buildTestReportFromReportTree(testReport, reportTree, rootId);

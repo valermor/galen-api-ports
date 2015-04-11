@@ -48,7 +48,7 @@ struct LayoutCheckReport {
 
 struct ReportTree {
     1:string root_id,
-    2:map<string, ReportNode> nodes
+    2:list<ReportNode> nodes
 }
 
 

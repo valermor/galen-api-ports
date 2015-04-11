@@ -27,7 +27,7 @@ public class ReportUtils {
     }
 
     private static Iterable<ReportNode> filterChildrenNodes(ReportTree reportTree, final String parentNodeUniqueId) {
-        return Iterables.filter(reportTree.getNodes().values(), new Predicate<ReportNode>() {
+        return Iterables.filter(reportTree.getNodes(), new Predicate<ReportNode>() {
             @Override
             public boolean apply(ReportNode node) {
                 return node.getParent_id().equals(parentNodeUniqueId);
