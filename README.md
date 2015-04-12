@@ -1,3 +1,18 @@
+#Galen API Ports
+_Galen API Ports_ is an attempt to port the [Galen Framework](http://galenframework.com "Galen's Homepage") API to languages other than Javascript and Java, which are officially supported.
+At the moment, only Python is supported.
+
+#License
+_Galen API Ports_ is licensed under the Apache Software License provision.
+
+
+#Architecture
+The architecture is based on [Apache Thrift](https://thrift.apache.org/).
+In a nutshell, the Java Galen API is accessed by a Thrift Server which makes it available to clients implemented in othe languange.
+Two APIs from Galen Framework are currently available:
+- Hierarchical reports API
+- Layout validation based on Galen Spec language
+
 
 ##Galen API Server##
 ###Assembly server jar###
