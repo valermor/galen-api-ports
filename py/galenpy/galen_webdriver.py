@@ -1,19 +1,15 @@
 import json
 import logging
-import multiprocessing
-import random
-from time import sleep
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
-from thrift.Thrift import TType
 
-from pythrift.ttypes import RemoteWebDriverException, ResponseValueType
-from galenapi.thrift_client import ThriftClient
+from galenpy.thrift_client import ThriftClient
+from pythrift.ttypes import RemoteWebDriverException
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class GalenWebDriver(WebDriver):

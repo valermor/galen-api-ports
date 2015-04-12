@@ -4,8 +4,8 @@ from os import path, popen
 from random import random
 import subprocess
 from time import sleep
+from galenpy.remote_service_logging import RemoteServiceStreamListener, RemoteServiceLogger
 
-from galenapi.remote_service_logging import RemoteServiceStreamListener, RemoteServiceLogger
 
 MAX_SLOW_START_DELAY = 1
 
@@ -13,7 +13,7 @@ GALEN_REMOTE_API_SERVER_JAR = 'galen-api-server.jar'
 
 DEFAULT_THRIFT_SERVER_PORT = 9092
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def server_running(server_port):

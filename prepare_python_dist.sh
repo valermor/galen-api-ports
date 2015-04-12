@@ -1,8 +1,12 @@
 #!/bin/bash
 
-service_folder=py/galenapi/service
+service_folder=py/galenpy/service
 
-./update_thrift.sh
+echo "assembling Java server"
+./assemble_java_server.sh
+
+echo "generating Python Thrift files"
+./generate_py_thrift.sh
 
 if [ ! -d "${service_folder}" ]; then
     mkdir ${service_folder}

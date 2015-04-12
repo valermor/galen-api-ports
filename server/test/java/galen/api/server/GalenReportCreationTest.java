@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import galen.api.server.thrift.NodeType;
 import galen.api.server.thrift.ReportNode;
 import galen.api.server.thrift.ReportTree;
-import galen.api.server.utils.ReportUtils;
+import galen.api.server.utils.TestReportUtils;
 import net.mindengine.galen.reports.TestReport;
 import net.mindengine.galen.reports.nodes.TestReportNode;
 import org.testng.annotations.BeforeMethod;
@@ -61,7 +61,7 @@ public class GalenReportCreationTest {
     @Test(enabled = true)
     public void reportHasAllNodesInCorrectOrder() throws Exception {
         TestReport testReport = new TestReport();
-        ReportUtils.buildTestReportFromReportTree(testReport, reportTree, rootId);
+        TestReportUtils.buildTestReportFromReportTree(testReport, reportTree, rootId);
         TestReportNode firstNode = testReport.getNodes().get(0);
         assertThat("Root node should have node 1 as first child", firstNode.getName(), is("first node"));
         TestReportNode secondNode = testReport.getNodes().get(1);

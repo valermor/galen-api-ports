@@ -2,7 +2,7 @@ from Queue import Queue, Empty
 import logging
 from threading import Thread
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 io_q = Queue()

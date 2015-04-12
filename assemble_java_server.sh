@@ -3,7 +3,7 @@
 java_target_folder=./server/main/java/galen/api/server
 target_java_thrift=${java_target_folder}/thrift
 gen_thrift_files_folder=./target/generated-sources/thrift/galen/api/server
-destination_server_folder=bin
+destination_server_folder=./bin
 
 echo "Generate thrift files"
 mvn clean thrift:compile
@@ -27,6 +27,6 @@ fi
 mkdir ${destination_server_folder}
 
 echo "Server jar copied to /${destination_server_folder}/galen-api-server.jar"
-mv -f ./target/galen-api-thrift-1.0-SNAPSHOT-jar-with-dependencies.jar ./bin/galen-api-server.jar
+mv -f ./target/galen-api-thrift-1.0-SNAPSHOT-jar-with-dependencies.jar ${destination_server_folder}/galen-api-server.jar
 
 exit 0

@@ -25,7 +25,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static galen.api.server.GsonUtils.getGson;
 import static galen.api.server.thrift.ResponseValueType.map_cap;
 import static galen.api.server.thrift.ResponseValueType.string_cap;
-import static galen.api.server.utils.ReportUtils.buildTestReportFromReportTree;
+import static galen.api.server.utils.TestReportUtils.buildTestReportFromReportTree;
 import static java.lang.String.format;
 import static org.openqa.selenium.remote.ErrorCodes.SESSION_NOT_CREATED;
 import static org.openqa.selenium.remote.ErrorCodes.SUCCESS;

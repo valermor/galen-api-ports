@@ -12,7 +12,7 @@ import net.mindengine.galen.reports.nodes.TextReportNode;
 import static galen.api.server.thrift.NodeType.LAYOUT;
 import static galen.api.server.thrift.NodeType.TEXT;
 
-public class ReportUtils {
+public class TestReportUtils {
 
     public static void buildTestReportFromReportTree(TestReport testReport, ReportTree reportTree, final String parentNodeUniqueId) {
         Iterable<ReportNode> childrenNodes = filterChildrenNodes(reportTree, parentNodeUniqueId);

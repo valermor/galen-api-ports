@@ -3,10 +3,10 @@
 **/target
 *.iml
 /server/main/java/galen/api/server/thrift
-/py/galenapi/service/*
-/py/galenapi/pythrift
-/py/dist
-/py/build
-/py/galenapi.egg-info
+/py/galenpy/service
+/py/galenpy/pythrift
+dist
+build
+galenapi.egg-info
 /bin
 .DS_Store

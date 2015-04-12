@@ -1,7 +1,6 @@
 import uuid
-
-from galenapi.pythrift.ttypes import ReportTree, NodeType, ReportNode
-from galenapi.thrift_client import ThriftClient
+from galenpy.pythrift.ttypes import ReportTree, ReportNode, NodeType
+from galenpy.thrift_client import ThriftClient
 
 
 INFO = "info"

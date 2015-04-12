@@ -6,10 +6,10 @@ from thrift import Thrift
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 from thrift.transport.TTransport import TTransportException
+from galenpy.remote_service_lifecycle import start_server, stop_server
 
 from pythrift import GalenApiRemoteService
 from pythrift.ttypes import SpecNotFoundException
-from galenapi.remote_service_lifecycle import start_server, stop_server
 
 
 GALEN_REMOTE_API_SERVICE_DEFAULT_PORT = 9092
@@ -18,7 +18,7 @@ GALEN_REMOTE_API_SERVICE_DEFAULT_PORT = 9092
     remote server so that we are allowed to quit it."""
 RESILIENCE_INTERVAL = 5
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class ThriftClient(object):

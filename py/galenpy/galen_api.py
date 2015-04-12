@@ -1,12 +1,12 @@
 import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
-from galenapi.galen_webdriver import GalenWebDriver
-from galenapi.thrift_client import ThriftClient
+from galenpy.galen_webdriver import GalenWebDriver
+from galenpy.thrift_client import ThriftClient
 from pythrift.ttypes import SpecNotFoundException
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class Galen(object):
