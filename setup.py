@@ -13,11 +13,11 @@ def get_requirements():
 
 setup(
     name='galenpy',
-    version='0.1.0',
+    version='0.1.1',
     url='https://github.com/valermor/galen-api-ports',
     author='valerio morsella',
     author_email='valerio.morsella@skyscanner.net',
-    package_data={'galenpy': ['service/*.jar', 'pythrift/*-remote', '*.config']},
+    package_data={'galenpy': ['service/*.jar', 'pythrift/*-remote', 'utils/*.config']},
     description='Porting of the Galen Framework API to Python',
     long_description=open('py/README').read(),
     install_requires=get_requirements(),
