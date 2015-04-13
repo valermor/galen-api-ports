@@ -3,8 +3,6 @@
 echo "packaging python libs"
 ./prepare_python_dist.sh
 
-echo "creating a source distribution"
-
 if [ -d "build" ]; then
     rm -rf build
 fi
@@ -13,7 +11,7 @@ if [ -d "dist" ]; then
     rm -rf dist
 fi
 
-if [ -d "galenapi.egg-info" ]; then
+if [ -d "py/galenapi.egg-info" ]; then
     rm -rf galenapi.egg-info
 fi
 

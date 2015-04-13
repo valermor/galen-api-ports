@@ -14,7 +14,6 @@
 # limitations under the License.                                           #
 ############################################################################
 
-
 from Queue import Queue, Empty
 import logging
 from threading import Thread

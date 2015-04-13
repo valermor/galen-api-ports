@@ -1,6 +1,6 @@
 import unittest
 import mock
-from galenapi.galen_webdriver import ThriftRemoteConnection
+from galenpy.galen_webdriver import ThriftRemoteConnection
 
 
 class TestGalenWebDriver(unittest.TestCase):
