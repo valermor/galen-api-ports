@@ -27,16 +27,18 @@ exception RemoteWebDriverException {
 	1: string message
 }
 
-union MapValue {
+union ContainerValue {
     1:bool boolean_value
     2:string unicode_value
     3:map<string, string> dict_value
+    4:list<string> list_value
 }
 
 union ResponseValueType {
-	1:map<string, MapValue> map_values
-	2:string string_value
-	3:string wrapped_long_value
+	1:map<string, ContainerValue> map_values
+	2:list<ContainerValue> list_values
+	3:string string_value
+	4:string wrapped_long_value
 }
 
 struct Response {

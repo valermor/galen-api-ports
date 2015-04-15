@@ -81,10 +81,21 @@ class ThriftRemoteConnection(RemoteConnection):
                     for key, value in response.value.map_values.iteritems():
                         if value.unicode_value:
                             response_value[key] = value.unicode_value
-                        if value.boolean_value:
+                        elif value.boolean_value:
                             response_value[key] = True if value.boolean_value else False
-                        if value.dict_value:
+                        elif value.dict_value:
                             response_value[key] = value.dict_value
+                elif response.value.list_values:
+                    response_value = list()
+                    for list_item in response.value.list_values:
+                        if list_item.unicode_value:
+                            response_value.append(list_item.unicode_value)
+                        elif list_item.boolean_value:
+                            response_value.append(list_item.boolean_value)
+                        elif list_item.dict_value:
+                            response_value.append(list_item.dict_value)
+                        elif list_item.list_value:
+                            response_value.append(list_item.list_value)
                 elif response.value.string_value:
                     response_value = response.value.string_value
                 elif response.value.wrapped_long_value:

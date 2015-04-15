@@ -17,6 +17,7 @@
 package galen.api.server;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import galen.api.server.thrift.*;
 import galen.api.server.thrift.Response;
@@ -42,8 +43,8 @@ import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static galen.api.server.GsonUtils.getGson;
-import static galen.api.server.thrift.MapValue.boolean_value;
-import static galen.api.server.thrift.MapValue.unicode_value;
+import static galen.api.server.thrift.ContainerValue.boolean_value;
+import static galen.api.server.thrift.ContainerValue.unicode_value;
 import static galen.api.server.thrift.ResponseValueType.*;
 import static galen.api.server.utils.TestReportUtils.buildTestReportFromReportTree;
 import static java.lang.String.format;
@@ -111,6 +112,8 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                     responseValue = wrapped_long_value(Long.toString((Long)value));
                 } else if(value instanceof String) {
                     responseValue = string_value((String) value);
+                } else if (value instanceof List) {
+                    responseValue = list_values(prepareListForSending((List<?> )value));
                 }
                 return new Response(responseValue, response.getSessionId(), response.getStatus(), response.getState());
             }
@@ -224,7 +227,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         response.setStatus(SUCCESS);
         RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
         remoteDriver.getCapabilities();
-        Map<String, MapValue> capabilitiesToDict = prepareMapForSending(remoteDriver.getCapabilities().asMap());
+        Map<String, ContainerValue> capabilitiesToDict = prepareMapForSending(remoteDriver.getCapabilities().asMap());
         response.setValue(map_values(capabilitiesToDict));
         response.setSession_id(remoteDriver.getSessionId().toString());
         response.setState(new ErrorCodes().toState(SUCCESS));
@@ -244,28 +247,51 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
 
     /**
      * Transforms a Map<String, ?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
-     * into a Thrift compatible Map<String, MapValue>
+     * into a Thrift compatible Map<String, ContainerValue>
      */
-    private Map<String, MapValue> prepareMapForSending(Map<String, ?> map) {
-        return Maps.transformValues(map, new Function<Object, MapValue>() {
+    private Map<String, ContainerValue> prepareMapForSending(Map<String, ?> map) {
+        return Maps.transformValues(map, new Function<Object, ContainerValue>() {
             @Override
-            public MapValue apply(Object capabilityMapValue) {
-                if (capabilityMapValue instanceof Boolean) {
-                    return boolean_value((Boolean) capabilityMapValue);
-                } else if (capabilityMapValue instanceof String) {
-                    return unicode_value((String) capabilityMapValue);
-                } else if (capabilityMapValue instanceof Platform) {
-                    return unicode_value(((Platform) capabilityMapValue).name());
-                } else if (capabilityMapValue instanceof Map) {
-                    Map<String, String> returnDict = new HashMap<String, String>();
-                    for (Map.Entry<String, Object> entry : ((Map<String, Object>) capabilityMapValue).entrySet()) {
-                        returnDict.put(entry.getKey(), (String) entry.getValue());
-                    }
-                    return MapValue.dict_value(returnDict);
-                }
-                throw new IllegalStateException("Capability entry type not found.");
+            public ContainerValue apply(Object nativeValue) {
+                return getContainerValue(nativeValue);
             }
         });
+    }
+
+    /**
+     * Transforms a List<?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
+     * into a Thrift compatible List<ContainerValue>
+     */
+    private List<ContainerValue> prepareListForSending(List<?> list) {
+        return Lists.transform(list, new Function<Object, ContainerValue>() {
+            @Override
+            public ContainerValue apply(Object nativeValue) {
+                return getContainerValue(nativeValue);
+            }
+        });
+    }
+
+    private ContainerValue getContainerValue(Object nativeValue) {
+        if (nativeValue instanceof Boolean) {
+            return boolean_value((Boolean) nativeValue);
+        } else if (nativeValue instanceof String) {
+            return unicode_value((String) nativeValue);
+        } else if (nativeValue instanceof Platform) {
+            return unicode_value(((Platform) nativeValue).name());
+        } else if (nativeValue instanceof Map) {
+            Map<String, String> dict = new HashMap<String, String>();
+            for (Map.Entry<String, Object> entry : ((Map<String, Object>) nativeValue).entrySet()) {
+                dict.put(entry.getKey(), (String) entry.getValue());
+            }
+            return ContainerValue.dict_value(dict);
+        } else if (nativeValue instanceof List) {
+            ArrayList<String> list = new ArrayList<String>();
+            for (Object item : (List) nativeValue) {
+                list.add((String) item);
+            }
+            return ContainerValue.list_value(list);
+        }
+        throw new IllegalStateException("Capability entry type not found.");
     }
 
     /**

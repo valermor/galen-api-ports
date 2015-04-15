@@ -13,7 +13,7 @@ def get_requirements():
 
 setup(
     name='galenpy',
-    version='0.1.1',
+    version='0.1.2',
     url='https://github.com/valermor/galen-api-ports',
     author='valerio morsella',
     author_email='valerio.morsella@skyscanner.net',
