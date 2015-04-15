@@ -28,7 +28,7 @@ from pythrift.ttypes import RemoteWebDriverException
 logger = logging.getLogger()
 
 
-class GalenWebDriver(WebDriver):
+class GalenRemoteWebDriver(WebDriver):
     """
     This is implementation of RemoteWebDriver Client which uses JsonWire protocol over Thrift. The commands to be sent
     to a remote Grid are intercepted and sent across the Thrift interface.
@@ -49,7 +49,7 @@ class GalenWebDriver(WebDriver):
             raise e
 
     def quit(self):
-        super(GalenWebDriver, self).quit()
+        super(GalenRemoteWebDriver, self).quit()
 
 
 class ThriftRemoteConnection(RemoteConnection):
@@ -76,11 +76,23 @@ class ThriftRemoteConnection(RemoteConnection):
             response = self.thrift_client.execute(self.session_id, command, data)
             response_value = ''
             if response.value:
-                if response.value.map_cap:
-                    response_value = response.value.map_cap
+                if response.value.map_values:
+                    response_value = dict()
+                    for key, value in response.value.map_values.iteritems():
+                        if value.unicode_value:
+                            response_value[key] = value.unicode_value
+                        if value.boolean_value:
+                            response_value[key] = True if value.boolean_value else False
+                        if value.dict_value:
+                            response_value[key] = value.dict_value
+                elif response.value.string_value:
+                    response_value = response.value.string_value
+                elif response.value.wrapped_long_value:
+                    response_value = long(response.value.wrapped_long_value)
             return dict(status=response.status, sessionId=response.session_id, state=response.state, value=response_value)
         except RemoteWebDriverException as e:
             raise WebDriverException(e.message)
 
     def set_session_id(self, session_id):
         self.session_id = session_id
+

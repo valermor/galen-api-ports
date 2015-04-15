@@ -17,7 +17,7 @@
 import logging
 
 from exception import IllegalMethodCallException, FileNotFoundError
-from galenpy.galen_webdriver import GalenWebDriver
+from galenpy.galen_webdriver import GalenRemoteWebDriver
 from galenpy.thrift_client import ThriftClient
 from pythrift.ttypes import SpecNotFoundException
 
@@ -53,7 +53,7 @@ class Galen(object):
         :param excluded_tags: list of tags excluded from check.
         :return: CheckLayoutReport mapping info from the generated LayoutReport object in the Galen Server.
         """
-        if not isinstance(driver, GalenWebDriver):
+        if not isinstance(driver, GalenRemoteWebDriver):
             raise ValueError("Provided driver object is not an instance of GalenWebDriver")
         self.thrift_client = driver.thrift_client
         try:

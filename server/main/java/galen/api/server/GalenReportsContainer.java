@@ -1,4 +1,4 @@
-/***************************************************************************
+/****************************************************************************
  * Copyright 2015 Valerio Morsella                                          *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -12,17 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
- ***************************************************************************/
+ ****************************************************************************/
 
 package galen.api.server;
 
 import com.google.common.collect.Lists;
 import net.mindengine.galen.reports.GalenTestInfo;
-import net.mindengine.galen.reports.TestReport;
 import net.mindengine.galen.reports.model.LayoutReport;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static net.mindengine.galen.reports.GalenTestInfo.fromString;
 

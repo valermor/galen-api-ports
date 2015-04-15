@@ -1,4 +1,4 @@
-/***************************************************************************
+/****************************************************************************
  * Copyright 2015 Valerio Morsella                                          *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -12,10 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
- ***************************************************************************/
+ ****************************************************************************/
 
 package galen.api.server;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 import galen.api.server.thrift.*;
 import galen.api.server.thrift.Response;
 import galen.api.server.utils.StringUtils;
@@ -25,6 +27,7 @@ import net.mindengine.galen.reports.HtmlReportBuilder;
 import net.mindengine.galen.reports.TestReport;
 import net.mindengine.galen.reports.model.LayoutReport;
 import org.apache.thrift.TException;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.*;
@@ -39,8 +42,9 @@ import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static galen.api.server.GsonUtils.getGson;
-import static galen.api.server.thrift.ResponseValueType.map_cap;
-import static galen.api.server.thrift.ResponseValueType.string_cap;
+import static galen.api.server.thrift.MapValue.boolean_value;
+import static galen.api.server.thrift.MapValue.unicode_value;
+import static galen.api.server.thrift.ResponseValueType.*;
 import static galen.api.server.utils.TestReportUtils.buildTestReportFromReportTree;
 import static java.lang.String.format;
 import static org.openqa.selenium.remote.ErrorCodes.SESSION_NOT_CREATED;
@@ -102,7 +106,11 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                 ResponseValueType responseValue = null;
                 Object value = response.getValue();
                 if (value instanceof Map) {
-                    responseValue = map_cap((Map<String, String>) value);
+                    responseValue = map_values(prepareMapForSending((Map<String, ?>) value));
+                } else if(value instanceof Long) {
+                    responseValue = wrapped_long_value(Long.toString((Long)value));
+                } else if(value instanceof String) {
+                    responseValue = string_value((String) value);
                 }
                 return new Response(responseValue, response.getSessionId(), response.getStatus(), response.getState());
             }
@@ -215,7 +223,9 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         Response response = new Response();
         response.setStatus(SUCCESS);
         RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
-        response.setValue(string_cap(getGson().toJson(remoteDriver.getCapabilities().asMap())));
+        remoteDriver.getCapabilities();
+        Map<String, MapValue> capabilitiesToDict = prepareMapForSending(remoteDriver.getCapabilities().asMap());
+        response.setValue(map_values(capabilitiesToDict));
         response.setSession_id(remoteDriver.getSessionId().toString());
         response.setState(new ErrorCodes().toState(SUCCESS));
         return response;
@@ -228,8 +238,34 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         Response response = new Response();
         response.setStatus(SESSION_NOT_CREATED);
         response.setState(new ErrorCodes().toState(SESSION_NOT_CREATED));
-        response.setValue(string_cap(reason));
+        response.setValue(string_value(reason));
         return response;
+    }
+
+    /**
+     * Transforms a Map<String, ?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
+     * into a Thrift compatible Map<String, MapValue>
+     */
+    private Map<String, MapValue> prepareMapForSending(Map<String, ?> map) {
+        return Maps.transformValues(map, new Function<Object, MapValue>() {
+            @Override
+            public MapValue apply(Object capabilityMapValue) {
+                if (capabilityMapValue instanceof Boolean) {
+                    return boolean_value((Boolean) capabilityMapValue);
+                } else if (capabilityMapValue instanceof String) {
+                    return unicode_value((String) capabilityMapValue);
+                } else if (capabilityMapValue instanceof Platform) {
+                    return unicode_value(((Platform) capabilityMapValue).name());
+                } else if (capabilityMapValue instanceof Map) {
+                    Map<String, String> returnDict = new HashMap<String, String>();
+                    for (Map.Entry<String, Object> entry : ((Map<String, Object>) capabilityMapValue).entrySet()) {
+                        returnDict.put(entry.getKey(), (String) entry.getValue());
+                    }
+                    return MapValue.dict_value(returnDict);
+                }
+                throw new IllegalStateException("Capability entry type not found.");
+            }
+        });
     }
 
     /**
