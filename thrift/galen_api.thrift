@@ -32,6 +32,7 @@ union ContainerValue {
     2:string unicode_value
     3:map<string, string> dict_value
     4:list<string> list_value
+    5:string wrapped_long_value
 }
 
 union ResponseValueType {

@@ -50,7 +50,7 @@ class RemoteServiceStreamListener(Thread):
 
 class RemoteServiceLogger(Thread):
     """
-    Class implementing a Thread that reads fetches logs from the queue and dumps it to an error or an info log depending
+    Class implementing a Thread that fetches logs from the queue and dumps it to an error or an info log depending
     on whether the relevant server logs was issued on stdout or stderr, respectively.
     """
     def __init__(self, process, name):

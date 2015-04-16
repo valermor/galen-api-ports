@@ -17,8 +17,6 @@
 package galen.api.server;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import galen.api.server.thrift.*;
 import galen.api.server.thrift.Response;
 import galen.api.server.utils.StringUtils;
@@ -41,7 +39,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
+import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.transformValues;
 import static galen.api.server.GsonUtils.getGson;
 import static galen.api.server.thrift.ContainerValue.boolean_value;
 import static galen.api.server.thrift.ContainerValue.unicode_value;
@@ -90,6 +90,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                 throw new RemoteWebDriverException(e.getMessage());
             }
         }
+        name = handleCommandNameExceptions(name);
         Command command = new Command(new SessionId(sessionId), name, paramsAsMap);
         try {
             log.info(format("Executing command %s for sessionId %s", name, sessionId));
@@ -121,6 +122,17 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * As it turns out that Java and Python implementations differs in the command names, this method is to align naming
+     * to conventions used in Java {@link org.openqa.selenium.remote.RemoteWebDriver}
+     */
+    private String handleCommandNameExceptions(String name) {
+        if (name.equals("windowMaximize")) {
+            name = "maximizeWindow";
+        }
+        return name;
     }
 
     /**
@@ -246,11 +258,27 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     }
 
     /**
+     * Transforms a Java Object into a ResponseValueType.
+     */
+    private ResponseValueType transformToResponseValueType(Object value) {
+        if (value instanceof Map) {
+            return map_values(prepareMapForSending((Map<String, ?>) value));
+        } else if(value instanceof Long) {
+            return wrapped_long_value(Long.toString((Long)value));
+        } else if(value instanceof String) {
+            return string_value((String) value);
+        } else if (value instanceof List) {
+            return list_values(prepareListForSending((List<?> )value));
+        }
+        throw new IllegalStateException("Input type is unknown");
+    }
+
+    /**
      * Transforms a Map<String, ?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
      * into a Thrift compatible Map<String, ContainerValue>
      */
     private Map<String, ContainerValue> prepareMapForSending(Map<String, ?> map) {
-        return Maps.transformValues(map, new Function<Object, ContainerValue>() {
+        return transformValues(map, new Function<Object, ContainerValue>() {
             @Override
             public ContainerValue apply(Object nativeValue) {
                 return getContainerValue(nativeValue);
@@ -263,7 +291,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
      * into a Thrift compatible List<ContainerValue>
      */
     private List<ContainerValue> prepareListForSending(List<?> list) {
-        return Lists.transform(list, new Function<Object, ContainerValue>() {
+        return transform(list, new Function<Object, ContainerValue>() {
             @Override
             public ContainerValue apply(Object nativeValue) {
                 return getContainerValue(nativeValue);
@@ -271,6 +299,9 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         });
     }
 
+    /**
+     * Transforms a Java object into a ContainerValue.
+     */
     private ContainerValue getContainerValue(Object nativeValue) {
         if (nativeValue instanceof Boolean) {
             return boolean_value((Boolean) nativeValue);
@@ -281,7 +312,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         } else if (nativeValue instanceof Map) {
             Map<String, String> dict = new HashMap<String, String>();
             for (Map.Entry<String, Object> entry : ((Map<String, Object>) nativeValue).entrySet()) {
-                dict.put(entry.getKey(), (String) entry.getValue());
+                dict.put(entry.getKey(), stringifyPrimitiveType(entry.getValue()));
             }
             return ContainerValue.dict_value(dict);
         } else if (nativeValue instanceof List) {
@@ -290,8 +321,24 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                 list.add((String) item);
             }
             return ContainerValue.list_value(list);
+        } else if (nativeValue instanceof Long) {
+            return ContainerValue.wrapped_long_value(nativeValue.toString());
         }
-        throw new IllegalStateException("Capability entry type not found.");
+        throw new IllegalStateException("Value type not found.");
+    }
+
+    /**
+     * Transforms a primitive type into a String to be sent over.
+     */
+    private String stringifyPrimitiveType(Object value) {
+        if (value instanceof Boolean) {
+            return (Boolean)value?"True":"False";
+        } else if (value instanceof String) {
+            return (String) value;
+        } else if (value instanceof Long) {
+            return Long.toString((Long)value);
+        }
+        throw new IllegalStateException("Unsupported type");
     }
 
     /**

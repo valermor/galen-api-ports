@@ -77,25 +77,9 @@ class ThriftRemoteConnection(RemoteConnection):
             response_value = ''
             if response.value:
                 if response.value.map_values:
-                    response_value = dict()
-                    for key, value in response.value.map_values.iteritems():
-                        if value.unicode_value:
-                            response_value[key] = value.unicode_value
-                        elif value.boolean_value:
-                            response_value[key] = True if value.boolean_value else False
-                        elif value.dict_value:
-                            response_value[key] = value.dict_value
+                    response_value = unpack_dict_values(response.value.map_values)
                 elif response.value.list_values:
-                    response_value = list()
-                    for list_item in response.value.list_values:
-                        if list_item.unicode_value:
-                            response_value.append(list_item.unicode_value)
-                        elif list_item.boolean_value:
-                            response_value.append(list_item.boolean_value)
-                        elif list_item.dict_value:
-                            response_value.append(list_item.dict_value)
-                        elif list_item.list_value:
-                            response_value.append(list_item.list_value)
+                    response_value = unpack_list_values(response.value.list_values)
                 elif response.value.string_value:
                     response_value = response.value.string_value
                 elif response.value.wrapped_long_value:
@@ -106,4 +90,45 @@ class ThriftRemoteConnection(RemoteConnection):
 
     def set_session_id(self, session_id):
         self.session_id = session_id
+
+
+def unpack_list_values(list_values):
+    response_value = list()
+    for list_item in list_values:
+        if list_item.unicode_value:
+            response_value.append(list_item.unicode_value)
+        elif list_item.boolean_value:
+            response_value.append(list_item.boolean_value)
+        elif list_item.dict_value:
+            if list_item.dict_value is 'True':
+                response_value.append(True)
+            elif list_item.dict_value is 'False':
+                response_value.append(False)
+            else:
+                response_value.append(list_item.dict_value)
+        elif list_item.list_value:
+            response_value.append(list_item.list_value)
+    return response_value
+
+
+def unpack_dict_values(map_values):
+    dict_value = dict()
+    for key, value in map_values.iteritems():
+        if value.unicode_value:
+            dict_value[key] = value.unicode_value
+        elif value.boolean_value:
+            dict_value[key] = value.boolean_value
+        elif value.dict_value:
+            if value.dict_value is 'True':
+                dict_value[key] = True
+            elif value.dict_value is 'False':
+                dict_value[key] = False
+            else:
+                dict_value[key] = value.dict_value
+        elif value.list_value:
+            dict_value[key] = value.list_value
+        elif value.wrapped_long_value:
+            dict_value[key] = long(value.wrapped_long_value)
+    return dict_value
+
 
