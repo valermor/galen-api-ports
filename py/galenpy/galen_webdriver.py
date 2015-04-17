@@ -76,14 +76,7 @@ class ThriftRemoteConnection(RemoteConnection):
             response = self.thrift_client.execute(self.session_id, command, data)
             response_value = ''
             if response.value:
-                if response.value.map_values:
-                    response_value = unpack_dict_values(response.value.map_values)
-                elif response.value.list_values:
-                    response_value = unpack_list_values(response.value.list_values)
-                elif response.value.string_value:
-                    response_value = response.value.string_value
-                elif response.value.wrapped_long_value:
-                    response_value = long(response.value.wrapped_long_value)
+                unwrap_response_value(response.value)
             return dict(status=response.status, sessionId=response.session_id, state=response.state, value=response_value)
         except RemoteWebDriverException as e:
             raise WebDriverException(e.message)
@@ -92,7 +85,26 @@ class ThriftRemoteConnection(RemoteConnection):
         self.session_id = session_id
 
 
-def unpack_list_values(list_values):
+def unwrap_response_value(response_value):
+    """
+    Transforms the response value received on the Thrift interface from ResponseValueType to the types WebDriver expects
+    to receive from a CommandExecutor.
+    """
+    if response_value.map_values:
+        return unwrap_dict_values(response_value.map_values)
+    elif response_value.list_values:
+        return unwrap_list_values(response_value.list_values)
+    elif response_value.string_value:
+        return response_value.string_value
+    elif response_value.wrapped_long_value:
+        return long(response_value.wrapped_long_value)
+    raise ValueError("Unknown response.value type")
+
+
+def unwrap_list_values(list_values):
+    """
+    Transforms a Thrift list of values to a Python list.
+    """
     response_value = list()
     for list_item in list_values:
         if list_item.unicode_value:
@@ -100,9 +112,9 @@ def unpack_list_values(list_values):
         elif list_item.boolean_value:
             response_value.append(list_item.boolean_value)
         elif list_item.dict_value:
-            if list_item.dict_value is 'True':
+            if list_item.dict_value == 'True':
                 response_value.append(True)
-            elif list_item.dict_value is 'False':
+            elif list_item.dict_value == 'False':
                 response_value.append(False)
             else:
                 response_value.append(list_item.dict_value)
@@ -111,7 +123,10 @@ def unpack_list_values(list_values):
     return response_value
 
 
-def unpack_dict_values(map_values):
+def unwrap_dict_values(map_values):
+    """
+    Transforms a Thrift map of values to a Python dict.
+    """
     dict_value = dict()
     for key, value in map_values.iteritems():
         if value.unicode_value:
@@ -119,9 +134,9 @@ def unpack_dict_values(map_values):
         elif value.boolean_value:
             dict_value[key] = value.boolean_value
         elif value.dict_value:
-            if value.dict_value is 'True':
+            if value.dict_value == 'True':
                 dict_value[key] = True
-            elif value.dict_value is 'False':
+            elif value.dict_value == 'False':
                 dict_value[key] = False
             else:
                 dict_value[key] = value.dict_value

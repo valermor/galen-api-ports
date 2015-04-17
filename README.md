@@ -7,7 +7,7 @@ At the moment, only porting to Python is provided.
 _Galen API Ports_ is licensed under the Apache Software License 2.0 provision.
 
 ##Architecture
-The idea is simple: Galen Java APIs are made available to other languages through an RPC implementation.
+The idea is simple. Galen Java APIs are made available to other languages through an RPC implementation.
 The RPC is based on [Apache Thrift](https://thrift.apache.org/).
 A Thrift Java Server calls the Galen Java API, while clients implemented in other languages are free to expose their own API implementation.
 The services Galen APIs provide can be divided into two groups:
@@ -17,10 +17,14 @@ The services Galen APIs provide can be divided into two groups:
 Currently, only a Python client exists. Both server and client live in the same project.
 
 ##Json over Thrift Remote WebDriver
+In a typical Galen layout test, some interactions (via the WebDriver APIs) would prepare the page under test for a layout inspection.
+In the architecture of the porting solution, this implies also the functionality exposed by the WebDriver instance have to go through the Thrift interface.
+This is accomplished through the implementation of a Jsonwire over Thrift Remote WebDriver Interface.
+In a nutshell, the Jsonwire protocol is implemented inside a customized RemoteConnection which marshalls Jsonwire commands to and from the Java RemoteWebDriver end through the Thrift mechanism.
 
 ##Server lifecycle
-
-
+One of the requirements on the client side is that tests in the ported language can be run simultaneously. This implies the Thrift server should be able to serve clients concurrently.
+Among the other things, one of the problem that is solved in the porting is making sure that the server is always available when tests are running and it quits when idle.
 
 ##Limitations
 At the moment, only Remote Webdriver is supported.

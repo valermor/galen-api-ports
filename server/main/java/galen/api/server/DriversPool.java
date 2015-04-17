@@ -18,6 +18,7 @@ package galen.api.server;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.SessionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class DriversPool {
         }
     }
 
-    public WebDriver getBySessionId(String sessionId) {
+    public WebDriver getBySessionId(String sessionId) throws SessionNotFoundException {
         for (WebDriver driver : driversPool) {
             if (driver instanceof RemoteWebDriver) {
                 if (((RemoteWebDriver) driver).getSessionId().toString().equals(sessionId)) {
@@ -57,7 +58,7 @@ public class DriversPool {
                 }
             }
         }
-        throw new IllegalStateException(format("Driver with session id %s has never been created", sessionId));
+        throw new SessionNotFoundException(format("Driver with session id %s has never been created", sessionId));
     }
 
     public void removeDriverBySessionId(String sessionId) {

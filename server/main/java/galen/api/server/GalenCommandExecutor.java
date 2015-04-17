@@ -62,7 +62,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     }
 
     /**
-     * Executes the JSON over HTPP commands received over Thrift inside an instance of RemoteWebDriver.
+     * Executes the command received over the Thrift interface inside an instance of RemoteWebDriver.
      * @param sessionId WebDriver SessionId.
      * @param name Command name.
      * @param params Command params.
@@ -105,34 +105,16 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                 if (name.equals(DriverCommand.QUIT)) {
                     DriversPool.get().removeDriverBySessionId(sessionId);
                 }
-                ResponseValueType responseValue = null;
-                Object value = response.getValue();
-                if (value instanceof Map) {
-                    responseValue = map_values(prepareMapForSending((Map<String, ?>) value));
-                } else if(value instanceof Long) {
-                    responseValue = wrapped_long_value(Long.toString((Long)value));
-                } else if(value instanceof String) {
-                    responseValue = string_value((String) value);
-                } else if (value instanceof List) {
-                    responseValue = list_values(prepareListForSending((List<?> )value));
-                }
+                ResponseValueType responseValue = transformToResponseValueType(response.getValue());
                 return new Response(responseValue, response.getSessionId(), response.getStatus(), response.getState());
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioe) {
+            log.error(format("IOException while executing command %s: %s", name, ioe.toString()));
+        } catch (WebDriverException wex) {
+            log.error(format("WebDriverException while executing command %s: + %s", name, wex.toString()));
+            throw new RemoteWebDriverException(wex.getMessage());
         }
         return null;
-    }
-
-    /**
-     * As it turns out that Java and Python implementations differs in the command names, this method is to align naming
-     * to conventions used in Java {@link org.openqa.selenium.remote.RemoteWebDriver}
-     */
-    private String handleCommandNameExceptions(String name) {
-        if (name.equals("windowMaximize")) {
-            name = "maximizeWindow";
-        }
-        return name;
     }
 
     /**
@@ -224,6 +206,38 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     }
 
     /**
+     * Transforms a Java Object into a ResponseValueType.
+     */
+    private ResponseValueType transformToResponseValueType(Object value) {
+        if (value == null) {
+            return null;
+        } else if (value instanceof Map) {
+            return map_values(prepareMapForSending((Map<String, ?>) value));
+        } else if(value instanceof Long) {
+            return wrapped_long_value(Long.toString((Long) value));
+        } else if(value instanceof String) {
+            return string_value((String) value);
+        } else if (value instanceof List) {
+            return list_values(prepareListForSending((List<?> )value));
+        } else {
+            throw new IllegalStateException("Input type is unknown");
+        }
+    }
+
+    /**
+     * As it turns out that Java and Python implementations differs in the command names, this method is to align naming
+     * to conventions used in Java {@link org.openqa.selenium.remote.RemoteWebDriver}
+     */
+    private String handleCommandNameExceptions(String name) {
+        if (name.equals("windowMaximize")) {
+            name = DriverCommand.MAXIMIZE_WINDOW;
+        } else if (name.equals("setTimeouts")) {
+            name = DriverCommand.SET_TIMEOUT;
+        }
+        return name;
+    }
+
+    /**
      * Transform a json String into a map of Object indexed by a String value.
      * This is needed to feed Command and DesideredCapabilities constructor.
      */
@@ -257,21 +271,6 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         return response;
     }
 
-    /**
-     * Transforms a Java Object into a ResponseValueType.
-     */
-    private ResponseValueType transformToResponseValueType(Object value) {
-        if (value instanceof Map) {
-            return map_values(prepareMapForSending((Map<String, ?>) value));
-        } else if(value instanceof Long) {
-            return wrapped_long_value(Long.toString((Long)value));
-        } else if(value instanceof String) {
-            return string_value((String) value);
-        } else if (value instanceof List) {
-            return list_values(prepareListForSending((List<?> )value));
-        }
-        throw new IllegalStateException("Input type is unknown");
-    }
 
     /**
      * Transforms a Map<String, ?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
@@ -303,6 +302,9 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
      * Transforms a Java object into a ContainerValue.
      */
     private ContainerValue getContainerValue(Object nativeValue) {
+        if (nativeValue == null) {
+            return null;
+        }
         if (nativeValue instanceof Boolean) {
             return boolean_value((Boolean) nativeValue);
         } else if (nativeValue instanceof String) {
