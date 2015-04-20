@@ -18,13 +18,18 @@ Currently, only a Python client exists. Both server and client live in the same 
 
 ##Json over Thrift Remote WebDriver
 In a typical Galen layout test, some interactions (via the WebDriver APIs) would prepare the page under test for a layout inspection.
-In the architecture of the porting solution, this implies also the functionality exposed by the WebDriver instance have to go through the Thrift interface.
+This has the implication that also the functionality exposed by the WebDriver instance have to go through the Thrift interface.
 This is accomplished through the implementation of a Jsonwire over Thrift Remote WebDriver Interface.
-In a nutshell, the Jsonwire protocol is implemented inside a customized RemoteConnection which marshalls Jsonwire commands to and from the Java RemoteWebDriver end through the Thrift mechanism.
+In a nutshell, the Jsonwire protocol is implemented inside a customized RemoteConnection which marshalls/unmarshalls Jsonwire commands to and from the Java RemoteWebDriver end through the Thrift mechanism.
 
 ##Server lifecycle
 One of the requirements on the client side is that tests in the ported language can be run simultaneously. This implies the Thrift server should be able to serve clients concurrently.
 Among the other things, one of the problem that is solved in the porting is making sure that the server is always available when tests are running and it quits when idle.
+On normal usage of the tool, the first test that needs to perform a Galen layout check will start the server. The server will be running until report is generated.
+As some test implementations might want to have control of the server lifecycle, an environment variable exists that disable launching of the server by tests:
+    SERVER_ALWAYS_ON=True
+This assumes, Galen API service should be launched manually with the below command:
+    java -jar galen-api-server.jar -r <port>
 
 ##Limitations
 At the moment, only Remote Webdriver is supported.

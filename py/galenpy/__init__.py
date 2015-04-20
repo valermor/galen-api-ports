@@ -19,6 +19,6 @@ import logging
 from logging import config
 from galenpy.utils.logger import get_logger_config_path
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 logging.config.fileConfig(get_logger_config_path())

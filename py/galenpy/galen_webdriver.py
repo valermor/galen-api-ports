@@ -76,7 +76,7 @@ class ThriftRemoteConnection(RemoteConnection):
             response = self.thrift_client.execute(self.session_id, command, data)
             response_value = ''
             if response.value:
-                unwrap_response_value(response.value)
+                response_value = unwrap_response_value(response.value)
             return dict(status=response.status, sessionId=response.session_id, state=response.state, value=response_value)
         except RemoteWebDriverException as e:
             raise WebDriverException(e.message)
