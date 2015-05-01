@@ -1,5 +1,6 @@
 from itertools import imap
 from setuptools import setup, find_packages
+import py
 
 def get_requirements():
     reqs_file = "requirements.txt"
@@ -13,7 +14,7 @@ def get_requirements():
 
 setup(
     name='galenpy',
-    version='0.1.3',
+    version=py.__version__,
     url='https://github.com/valermor/galen-api-ports',
     author='valerio morsella',
     author_email='valerio.morsella@skyscanner.net',
