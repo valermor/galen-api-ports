@@ -94,7 +94,7 @@ def unwrap_response_value(response_value):
         return unwrap_dict_values(response_value.map_values)
     elif response_value.list_values:
         return unwrap_list_values(response_value.list_values)
-    elif response_value.string_value:
+    elif response_value.string_value or response_value.string_value == '':
         return response_value.string_value
     elif response_value.wrapped_long_value:
         return long(response_value.wrapped_long_value)
