@@ -1,6 +1,5 @@
 #!/bin/sh
 
-chmod -R +x galen-api-ports
 echo "BUILDING GALENPY"
 ./distribute_galenpy.sh -no-upload
 export GALENPY_VERSION=$(python -c 'import py; print py.__version__')
