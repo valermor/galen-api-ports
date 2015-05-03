@@ -8,8 +8,8 @@ before_install:
  - chmod +x scripts/install_thrift.sh
  - chmod +x scripts/install_galenpy.sh
  - chmod +x scripts/run_tests.sh
- - scripts/install_thrift.sh
 install:
+ - scripts/install_thrift.sh
  - scripts/install_galenpy.sh
  - pip install -r galen-sample-py-tests/requirements.txt
  - export GRID_URL=http://valermor:764435f9-7986-4878-b6c8-8a100fda8cba@ondemand.saucelabs.com:80/wd/hub
