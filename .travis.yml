@@ -5,9 +5,8 @@ python:
   - "2.7"
 before_install:
  - git clone https://github.com/valermor/galen-sample-py-tests.git
- - chmod +x scripts/install_thrift.sh
- - chmod +x scripts/install_galenpy.sh
- - chmod +x scripts/run_tests.sh
+ - chmod -R +x scripts
+ - chmod -R +x ./
 install:
  - scripts/install_thrift.sh
  - scripts/install_galenpy.sh
