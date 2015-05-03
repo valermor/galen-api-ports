@@ -1,0 +1,15 @@
+sudo: true
+language:
+- python
+python:
+  - "2.7"
+before_install:
+ - git clone https://github.com/valermor/galen-sample-py-tests.git
+ - chmod +x scripts/install_thrift.sh
+ - scripts/install_thrift.sh
+install:
+ - chmod 700 scripts/install_galenpy.sh
+ - scripts/install_galenpy.sh
+ - pip install -r galen-sample-py-tests/requirements.txt
+ - export GRID_URL=http://valermor:764435f9-7986-4878-b6c8-8a100fda8cba@ondemand.saucelabs.com:80/wd/hub
+script: 'scripts/run_tests.sh'
