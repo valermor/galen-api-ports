@@ -18,6 +18,7 @@ namespace java galen.api.server.thrift
 namespace py pythrift
 
 typedef list<string> tags
+typedef string id
 
 exception SpecNotFoundException {
 	1: string message
@@ -42,6 +43,29 @@ union ResponseValueType {
 	4:string wrapped_long_value
 }
 
+union Value {
+    2:i32 int_value
+    3:string string_value
+    4:bool boolean_value
+    5:string wrapped_long_value
+	6:list<id> list_values
+	7:map<string, id> map_values
+}
+
+struct ResponseValueNew {
+    1:id value_id
+    2:id parent_id
+    3:Value value
+}
+
+struct ResponseNew {
+	1:ResponseValueNew response_value
+	2:list<ResponseValueNew> contained_values
+	3:string session_id
+	4:i32 status
+	5:string state
+}
+
 struct Response {
 	1:ResponseValueType value
 	2:string session_id
@@ -50,7 +74,7 @@ struct Response {
 }
 
 enum NodeType {
-    NODE =1,
+    NODE = 1,
     LAYOUT = 2,
     TEXT = 3
 }
@@ -82,6 +106,7 @@ service GalenApiRemoteService {
 	//WebDriver JsonWire over Thrift
     void initialize(1:string remote_server_addr),
     Response execute(1:string session_id, 2:string command, 3:string params) throws (1:RemoteWebDriverException exc),
+    ResponseNew executeNew(1:string session_id, 2:string command, 3:string params) throws (1:RemoteWebDriverException exc),
 
     //Galen check and report API
     void register_test(1:string test_name),

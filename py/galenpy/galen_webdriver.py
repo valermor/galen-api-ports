@@ -75,8 +75,8 @@ class ThriftRemoteConnection(RemoteConnection):
 
             response = self.thrift_client.execute(self.session_id, command, data)
             response_value = ''
-            if response.value:
-                response_value = unwrap_response_value(response.value)
+            if response.response_value:
+                response_value = unwrap_response_value_new(response.response_value.value, response.contained_values)
             return dict(status=response.status, sessionId=response.session_id, state=response.state, value=response_value)
         except RemoteWebDriverException as e:
             raise WebDriverException(e.message)
@@ -84,6 +84,38 @@ class ThriftRemoteConnection(RemoteConnection):
     def set_session_id(self, session_id):
         self.session_id = session_id
 
+
+def unwrap_response_value_new(value, contained_values):
+    if value is None:
+        return None
+    elif value.int_value:
+        return value.int_value
+    elif value.string_value or value.string_value == '':
+        return value.string_value
+    elif value.boolean_value is not None:
+        return value.boolean_value
+    elif value.wrapped_long_value:
+        return long(value.wrapped_long_value)
+    elif value.map_values:
+        unwrapped_dict = {}
+        for k, v in value.map_values.iteritems():
+            contained_value = get_contained_value(contained_values, v)
+            unwrapped_dict[k] = unwrap_response_value_new(contained_value, contained_values)
+        return unwrapped_dict
+    elif value.list_values:
+        unwrapped_list = []
+        for list_item in value.list_values:
+            contained_value = get_contained_value(contained_values, list_item)
+            unwrapped_list.append(unwrap_response_value_new(contained_value, contained_values))
+        return unwrapped_list
+    else:
+        raise ValueError("Unknown type: " + str(type(value)))
+
+
+def get_contained_value(contained_values, id):
+    for value in contained_values:
+        if value.value_id == id:
+            return value.value
 
 def unwrap_response_value(response_value):
     """

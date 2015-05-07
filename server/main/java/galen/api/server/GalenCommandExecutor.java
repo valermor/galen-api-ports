@@ -117,6 +117,54 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         return null;
     }
 
+    @Override
+    public ResponseNew executeNew(String sessionId, String commandName, String params) throws RemoteWebDriverException, TException {
+        Map<String, Object> paramsAsMap = fromJsonToStringObjectMap(params);
+        if (commandName.equals(DriverCommand.NEW_SESSION)) {
+            try {
+                log.info("Setting up new WebDriver session");
+                HashMap<String, Object> hashMap = extractDesiredCapabilities(paramsAsMap);
+                WebDriver driver = new RemoteWebDriver(new URL(remoteServerAddress), new DesiredCapabilities(hashMap));
+                DriversPool.get().set(driver);
+                return createSessionInitSuccessResponseNew(driver);
+            } catch (MalformedURLException e) {
+                log.error("Provided URL is malformed " + remoteServerAddress);
+                return createSessionInitFailureResponseNew("Provided URL is malformed " + remoteServerAddress);
+            } catch (UnreachableBrowserException e) {
+                log.error("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
+                return createSessionInitFailureResponseNew("Could not reach browser at URL " + remoteServerAddress +
+                        " check remote server is running.");
+            } catch (WebDriverException e) {
+                throw new RemoteWebDriverException(e.getMessage());
+            }
+        }
+        Command driverCommand = new Command(new SessionId(sessionId), handleCommandNameExceptions(commandName), paramsAsMap);
+        try {
+            log.info(format("Executing command %s for sessionId %s", commandName, sessionId));
+            WebDriver driver = DriversPool.get().getBySessionId(sessionId);
+            org.openqa.selenium.remote.Response response = null;
+            if (driver instanceof RemoteWebDriver) {
+                response = ((RemoteWebDriver) driver).getCommandExecutor().execute(driverCommand);
+            }
+            if (response == null) {
+                return null;
+            } else {
+                if (commandName.equals(DriverCommand.QUIT)) {
+                    DriversPool.get().removeDriverBySessionId(sessionId);
+                }
+                ThriftValueWrapper valueWrapper = new ThriftValueWrapper(response.getValue());
+                return new ResponseNew(valueWrapper.getValue(), valueWrapper.getContainedValues(), response.getSessionId(),
+                        response.getStatus(), response.getState());
+            }
+        } catch (IOException ioe) {
+            log.error(format("IOException while executing command %s: %s", commandName, ioe.toString()));
+        } catch (WebDriverException wex) {
+            log.error(format("WebDriverException while executing command %s: + %s", commandName, wex.toString()));
+            throw new RemoteWebDriverException(wex.getMessage());
+        }
+        return null;
+    }
+
     /**
      * Register test by name,
      * @param testName A unique name for the test.
@@ -260,6 +308,18 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         return response;
     }
 
+    private ResponseNew createSessionInitSuccessResponseNew(WebDriver driver) {
+        ResponseNew response = new ResponseNew();
+        response.setStatus(SUCCESS);
+        RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
+        ThriftValueWrapper wrappedValue = new ThriftValueWrapper(remoteDriver.getCapabilities().asMap());
+        response.setResponse_value(wrappedValue.getValue());
+        response.setContained_values(wrappedValue.getContainedValues());
+        response.setSession_id(remoteDriver.getSessionId().toString());
+        response.setState(new ErrorCodes().toState(SUCCESS));
+        return response;
+    }
+
     /**
      * Packages a failing session setup response which can be sent across the Thrift interface.
      */
@@ -271,6 +331,17 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         return response;
     }
 
+    private ResponseNew createSessionInitFailureResponseNew(String reason) {
+        ResponseNew response = new ResponseNew();
+        response.setStatus(SESSION_NOT_CREATED);
+        response.setState(new ErrorCodes().toState(SESSION_NOT_CREATED));
+        ResponseValueNew value = new ResponseValueNew();
+        Value valueType = new Value();
+        valueType.setString_value(reason);
+        value.setValue(valueType);
+        response.setResponse_value(value);
+        return response;
+    }
 
     /**
      * Transforms a Map<String, ?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
