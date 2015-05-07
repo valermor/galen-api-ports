@@ -76,7 +76,7 @@ class ThriftRemoteConnection(RemoteConnection):
             response = self.thrift_client.execute(self.session_id, command, data)
             response_value = ''
             if response.response_value:
-                response_value = unwrap_response_value_new(response.response_value.value, response.contained_values)
+                response_value = unwrap_response_value(response.response_value.value, response.contained_values)
             return dict(status=response.status, sessionId=response.session_id, state=response.state, value=response_value)
         except RemoteWebDriverException as e:
             raise WebDriverException(e.message)
@@ -85,7 +85,7 @@ class ThriftRemoteConnection(RemoteConnection):
         self.session_id = session_id
 
 
-def unwrap_response_value_new(value, contained_values):
+def unwrap_response_value(value, contained_values):
     if value is None:
         return None
     elif value.int_value:
@@ -100,13 +100,13 @@ def unwrap_response_value_new(value, contained_values):
         unwrapped_dict = {}
         for k, v in value.map_values.iteritems():
             contained_value = get_contained_value(contained_values, v)
-            unwrapped_dict[k] = unwrap_response_value_new(contained_value, contained_values)
+            unwrapped_dict[k] = unwrap_response_value(contained_value, contained_values)
         return unwrapped_dict
     elif value.list_values:
         unwrapped_list = []
         for list_item in value.list_values:
             contained_value = get_contained_value(contained_values, list_item)
-            unwrapped_list.append(unwrap_response_value_new(contained_value, contained_values))
+            unwrapped_list.append(unwrap_response_value(contained_value, contained_values))
         return unwrapped_list
     else:
         raise ValueError("Unknown type: " + str(type(value)))
@@ -116,66 +116,4 @@ def get_contained_value(contained_values, id):
     for value in contained_values:
         if value.value_id == id:
             return value.value
-
-def unwrap_response_value(response_value):
-    """
-    Transforms the response value received on the Thrift interface from ResponseValueType to the types WebDriver expects
-    to receive from a CommandExecutor.
-    """
-    if response_value.map_values:
-        return unwrap_dict_values(response_value.map_values)
-    elif response_value.list_values:
-        return unwrap_list_values(response_value.list_values)
-    elif response_value.string_value or response_value.string_value == '':
-        return response_value.string_value
-    elif response_value.wrapped_long_value:
-        return long(response_value.wrapped_long_value)
-    raise ValueError("Unknown response.value type")
-
-
-def unwrap_list_values(list_values):
-    """
-    Transforms a Thrift list of values to a Python list.
-    """
-    response_value = list()
-    for list_item in list_values:
-        if list_item.unicode_value:
-            response_value.append(list_item.unicode_value)
-        elif list_item.boolean_value:
-            response_value.append(list_item.boolean_value)
-        elif list_item.dict_value:
-            if list_item.dict_value == 'True':
-                response_value.append(True)
-            elif list_item.dict_value == 'False':
-                response_value.append(False)
-            else:
-                response_value.append(list_item.dict_value)
-        elif list_item.list_value:
-            response_value.append(list_item.list_value)
-    return response_value
-
-
-def unwrap_dict_values(map_values):
-    """
-    Transforms a Thrift map of values to a Python dict.
-    """
-    dict_value = dict()
-    for key, value in map_values.iteritems():
-        if value.unicode_value:
-            dict_value[key] = value.unicode_value
-        elif value.boolean_value:
-            dict_value[key] = value.boolean_value
-        elif value.dict_value:
-            if value.dict_value == 'True':
-                dict_value[key] = True
-            elif value.dict_value == 'False':
-                dict_value[key] = False
-            else:
-                dict_value[key] = value.dict_value
-        elif value.list_value:
-            dict_value[key] = value.list_value
-        elif value.wrapped_long_value:
-            dict_value[key] = long(value.wrapped_long_value)
-    return dict_value
-
 

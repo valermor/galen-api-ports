@@ -43,9 +43,6 @@ import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.transformValues;
 import static galen.api.server.GsonUtils.getGson;
-import static galen.api.server.thrift.ContainerValue.boolean_value;
-import static galen.api.server.thrift.ContainerValue.unicode_value;
-import static galen.api.server.thrift.ResponseValueType.*;
 import static galen.api.server.utils.TestReportUtils.buildTestReportFromReportTree;
 import static java.lang.String.format;
 import static org.openqa.selenium.remote.ErrorCodes.SESSION_NOT_CREATED;
@@ -64,15 +61,15 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     /**
      * Executes the command received over the Thrift interface inside an instance of RemoteWebDriver.
      * @param sessionId WebDriver SessionId.
-     * @param name Command name.
+     * @param commandName Command name.
      * @param params Command params.
      * @return an instance of {@link org.openqa.selenium.remote.Response}
      * @throws TException
      */
     @Override
-    public Response execute(String sessionId, String name, String params) throws TException {
+    public Response execute(String sessionId, String commandName, String params) throws RemoteWebDriverException, TException {
         Map<String, Object> paramsAsMap = fromJsonToStringObjectMap(params);
-        if (name.equals(DriverCommand.NEW_SESSION)) {
+        if (commandName.equals(DriverCommand.NEW_SESSION)) {
             try {
                 log.info("Setting up new WebDriver session");
                 HashMap<String, Object> hashMap = extractDesiredCapabilities(paramsAsMap);
@@ -85,54 +82,6 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
             } catch (UnreachableBrowserException e) {
                 log.error("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
                 return createSessionInitFailureResponse("Could not reach browser at URL " + remoteServerAddress +
-                        " check remote server is running.");
-            } catch (WebDriverException e) {
-                throw new RemoteWebDriverException(e.getMessage());
-            }
-        }
-        name = handleCommandNameExceptions(name);
-        Command command = new Command(new SessionId(sessionId), name, paramsAsMap);
-        try {
-            log.info(format("Executing command %s for sessionId %s", name, sessionId));
-            WebDriver driver = DriversPool.get().getBySessionId(sessionId);
-            org.openqa.selenium.remote.Response response = null;
-            if (driver instanceof RemoteWebDriver) {
-                response = ((RemoteWebDriver) driver).getCommandExecutor().execute(command);
-            }
-            if (response == null) {
-                return null;
-            } else {
-                if (name.equals(DriverCommand.QUIT)) {
-                    DriversPool.get().removeDriverBySessionId(sessionId);
-                }
-                ResponseValueType responseValue = transformToResponseValueType(response.getValue());
-                return new Response(responseValue, response.getSessionId(), response.getStatus(), response.getState());
-            }
-        } catch (IOException ioe) {
-            log.error(format("IOException while executing command %s: %s", name, ioe.toString()));
-        } catch (WebDriverException wex) {
-            log.error(format("WebDriverException while executing command %s: + %s", name, wex.toString()));
-            throw new RemoteWebDriverException(wex.getMessage());
-        }
-        return null;
-    }
-
-    @Override
-    public ResponseNew executeNew(String sessionId, String commandName, String params) throws RemoteWebDriverException, TException {
-        Map<String, Object> paramsAsMap = fromJsonToStringObjectMap(params);
-        if (commandName.equals(DriverCommand.NEW_SESSION)) {
-            try {
-                log.info("Setting up new WebDriver session");
-                HashMap<String, Object> hashMap = extractDesiredCapabilities(paramsAsMap);
-                WebDriver driver = new RemoteWebDriver(new URL(remoteServerAddress), new DesiredCapabilities(hashMap));
-                DriversPool.get().set(driver);
-                return createSessionInitSuccessResponseNew(driver);
-            } catch (MalformedURLException e) {
-                log.error("Provided URL is malformed " + remoteServerAddress);
-                return createSessionInitFailureResponseNew("Provided URL is malformed " + remoteServerAddress);
-            } catch (UnreachableBrowserException e) {
-                log.error("Could not reach browser at URL " + remoteServerAddress + " check remote server is running.");
-                return createSessionInitFailureResponseNew("Could not reach browser at URL " + remoteServerAddress +
                         " check remote server is running.");
             } catch (WebDriverException e) {
                 throw new RemoteWebDriverException(e.getMessage());
@@ -153,7 +102,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
                     DriversPool.get().removeDriverBySessionId(sessionId);
                 }
                 ThriftValueWrapper valueWrapper = new ThriftValueWrapper(response.getValue());
-                return new ResponseNew(valueWrapper.getValue(), valueWrapper.getContainedValues(), response.getSessionId(),
+                return new Response(valueWrapper.getValue(), valueWrapper.getContainedValues(), response.getSessionId(),
                         response.getStatus(), response.getState());
             }
         } catch (IOException ioe) {
@@ -254,25 +203,6 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
     }
 
     /**
-     * Transforms a Java Object into a ResponseValueType.
-     */
-    private ResponseValueType transformToResponseValueType(Object value) {
-        if (value == null) {
-            return null;
-        } else if (value instanceof Map) {
-            return map_values(prepareMapForSending((Map<String, ?>) value));
-        } else if(value instanceof Long) {
-            return wrapped_long_value(Long.toString((Long) value));
-        } else if(value instanceof String) {
-            return string_value((String) value);
-        } else if (value instanceof List) {
-            return list_values(prepareListForSending((List<?> )value));
-        } else {
-            throw new IllegalStateException("Input type is unknown");
-        }
-    }
-
-    /**
      * As it turns out that Java and Python implementations differs in the command names, this method is to align naming
      * to conventions used in Java {@link org.openqa.selenium.remote.RemoteWebDriver}
      */
@@ -300,18 +230,6 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         Response response = new Response();
         response.setStatus(SUCCESS);
         RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
-        remoteDriver.getCapabilities();
-        Map<String, ContainerValue> capabilitiesToDict = prepareMapForSending(remoteDriver.getCapabilities().asMap());
-        response.setValue(map_values(capabilitiesToDict));
-        response.setSession_id(remoteDriver.getSessionId().toString());
-        response.setState(new ErrorCodes().toState(SUCCESS));
-        return response;
-    }
-
-    private ResponseNew createSessionInitSuccessResponseNew(WebDriver driver) {
-        ResponseNew response = new ResponseNew();
-        response.setStatus(SUCCESS);
-        RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
         ThriftValueWrapper wrappedValue = new ThriftValueWrapper(remoteDriver.getCapabilities().asMap());
         response.setResponse_value(wrappedValue.getValue());
         response.setContained_values(wrappedValue.getContainedValues());
@@ -327,91 +245,12 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
         Response response = new Response();
         response.setStatus(SESSION_NOT_CREATED);
         response.setState(new ErrorCodes().toState(SESSION_NOT_CREATED));
-        response.setValue(string_value(reason));
-        return response;
-    }
-
-    private ResponseNew createSessionInitFailureResponseNew(String reason) {
-        ResponseNew response = new ResponseNew();
-        response.setStatus(SESSION_NOT_CREATED);
-        response.setState(new ErrorCodes().toState(SESSION_NOT_CREATED));
-        ResponseValueNew value = new ResponseValueNew();
+        ResponseValue value = new ResponseValue();
         Value valueType = new Value();
         valueType.setString_value(reason);
         value.setValue(valueType);
         response.setResponse_value(value);
         return response;
-    }
-
-    /**
-     * Transforms a Map<String, ?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
-     * into a Thrift compatible Map<String, ContainerValue>
-     */
-    private Map<String, ContainerValue> prepareMapForSending(Map<String, ?> map) {
-        return transformValues(map, new Function<Object, ContainerValue>() {
-            @Override
-            public ContainerValue apply(Object nativeValue) {
-                return getContainerValue(nativeValue);
-            }
-        });
-    }
-
-    /**
-     * Transforms a List<?> which is generally generated from RemoteWebDriver (e.g. capabilities exchange)
-     * into a Thrift compatible List<ContainerValue>
-     */
-    private List<ContainerValue> prepareListForSending(List<?> list) {
-        return transform(list, new Function<Object, ContainerValue>() {
-            @Override
-            public ContainerValue apply(Object nativeValue) {
-                return getContainerValue(nativeValue);
-            }
-        });
-    }
-
-    /**
-     * Transforms a Java object into a ContainerValue.
-     */
-    private ContainerValue getContainerValue(Object nativeValue) {
-        if (nativeValue == null) {
-            return null;
-        }
-        if (nativeValue instanceof Boolean) {
-            return boolean_value((Boolean) nativeValue);
-        } else if (nativeValue instanceof String) {
-            return unicode_value((String) nativeValue);
-        } else if (nativeValue instanceof Platform) {
-            return unicode_value(((Platform) nativeValue).name());
-        } else if (nativeValue instanceof Map) {
-            Map<String, String> dict = new HashMap<String, String>();
-            for (Map.Entry<String, Object> entry : ((Map<String, Object>) nativeValue).entrySet()) {
-                dict.put(entry.getKey(), stringifyPrimitiveType(entry.getValue()));
-            }
-            return ContainerValue.dict_value(dict);
-        } else if (nativeValue instanceof List) {
-            ArrayList<String> list = new ArrayList<String>();
-            for (Object item : (List) nativeValue) {
-                list.add((String) item);
-            }
-            return ContainerValue.list_value(list);
-        } else if (nativeValue instanceof Long) {
-            return ContainerValue.wrapped_long_value(nativeValue.toString());
-        }
-        throw new IllegalStateException("Value type not found.");
-    }
-
-    /**
-     * Transforms a primitive type into a String to be sent over.
-     */
-    private String stringifyPrimitiveType(Object value) {
-        if (value instanceof Boolean) {
-            return (Boolean)value?"True":"False";
-        } else if (value instanceof String) {
-            return (String) value;
-        } else if (value instanceof Long) {
-            return Long.toString((Long)value);
-        }
-        throw new IllegalStateException("Unsupported type");
     }
 
     /**

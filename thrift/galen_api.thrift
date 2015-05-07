@@ -28,21 +28,6 @@ exception RemoteWebDriverException {
 	1: string message
 }
 
-union ContainerValue {
-    1:bool boolean_value
-    2:string unicode_value
-    3:map<string, string> dict_value
-    4:list<string> list_value
-    5:string wrapped_long_value
-}
-
-union ResponseValueType {
-	1:map<string, ContainerValue> map_values
-	2:list<ContainerValue> list_values
-	3:string string_value
-	4:string wrapped_long_value
-}
-
 union Value {
     2:i32 int_value
     3:string string_value
@@ -52,25 +37,18 @@ union Value {
 	7:map<string, id> map_values
 }
 
-struct ResponseValueNew {
+struct ResponseValue {
     1:id value_id
     2:id parent_id
     3:Value value
 }
 
-struct ResponseNew {
-	1:ResponseValueNew response_value
-	2:list<ResponseValueNew> contained_values
+struct Response {
+	1:ResponseValue response_value
+	2:list<ResponseValue> contained_values
 	3:string session_id
 	4:i32 status
 	5:string state
-}
-
-struct Response {
-	1:ResponseValueType value
-	2:string session_id
-	3:i32 status
-	4:string state
 }
 
 enum NodeType {
@@ -106,7 +84,6 @@ service GalenApiRemoteService {
 	//WebDriver JsonWire over Thrift
     void initialize(1:string remote_server_addr),
     Response execute(1:string session_id, 2:string command, 3:string params) throws (1:RemoteWebDriverException exc),
-    ResponseNew executeNew(1:string session_id, 2:string command, 3:string params) throws (1:RemoteWebDriverException exc),
 
     //Galen check and report API
     void register_test(1:string test_name),

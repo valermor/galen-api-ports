@@ -1,6 +1,6 @@
 package galen.api.server;
 
-import galen.api.server.thrift.ResponseValueNew;
+import galen.api.server.thrift.ResponseValue;
 import galen.api.server.thrift.Value;
 import org.testng.collections.Lists;
 
@@ -13,24 +13,24 @@ import static galen.api.server.utils.StringUtils.generateUniqueString;
 
 public class ThriftValueWrapper {
 
-    private ResponseValueNew wrappedValue;
-    private List<ResponseValueNew> containedValues;
+    private ResponseValue wrappedValue;
+    private List<ResponseValue> containedValues;
 
     public ThriftValueWrapper(Object value) {
-        containedValues = new ArrayList<ResponseValueNew>();
+        containedValues = new ArrayList<ResponseValue>();
         wrappedValue = parseValue(value);
     }
 
-    public ResponseValueNew getValue() {
+    public ResponseValue getValue() {
         return wrappedValue;
     }
 
-    public List<ResponseValueNew> getContainedValues() {
+    public List<ResponseValue> getContainedValues() {
         return containedValues;
     }
 
-    private ResponseValueNew parseValue(Object value) {
-        ResponseValueNew responseValue = new ResponseValueNew();
+    private ResponseValue parseValue(Object value) {
+        ResponseValue responseValue = new ResponseValue();
         responseValue.setValue_id(generateUniqueString());
         Value valueType = new Value();
         if (value == null) {
@@ -47,7 +47,7 @@ public class ThriftValueWrapper {
             Map<String, String> transformedMap = new HashMap<String, String>();
             Map<String, ?> items = (Map<String, ?>) value;
             for (Map.Entry<String, ?> item : items.entrySet()) {
-                ResponseValueNew parsedValue = parseValue(item.getValue());
+                ResponseValue parsedValue = parseValue(item.getValue());
                 transformedMap.put(item.getKey(), parsedValue.getValue_id());
                 containedValues.add(parsedValue);
             }
@@ -55,7 +55,7 @@ public class ThriftValueWrapper {
         } else if (value instanceof List) {
         List<String> transformedList = Lists.newArrayList();
             for (Object item : (List<Object>) value) {
-                ResponseValueNew parsedValue = parseValue(item);
+                ResponseValue parsedValue = parseValue(item);
                 transformedList.add(parsedValue.getValue_id());
                 containedValues.add(parsedValue);
             }

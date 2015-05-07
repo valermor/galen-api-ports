@@ -60,7 +60,7 @@ class ThriftClient(object):
         return self
 
     def execute(self, session_id, command, request_params):
-        return self.client.executeNew(session_id, command, request_params)
+        return self.client.execute(session_id, command, request_params)
 
     def quit_service_if_inactive(self):
         sleep(RESILIENCE_INTERVAL)
