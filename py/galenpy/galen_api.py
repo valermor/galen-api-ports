@@ -34,7 +34,7 @@ class Galen(object):
     driver.get("http://example.com")
     driver.set_window_size(720, 1024)
 
-    galen_api = GalenApi().with_test_info('a Galen test')
+    galen_api = Galen()
     errors = galen_api.check_layout(driver, 'homePage.spec', ['phone'], None)
     if errors !=0:
         galen_api.generate_report("target/galen")

@@ -16,7 +16,6 @@
 
 package galen.api.server;
 
-import com.google.common.base.Function;
 import galen.api.server.thrift.*;
 import galen.api.server.thrift.Response;
 import galen.api.server.utils.StringUtils;
@@ -26,7 +25,6 @@ import net.mindengine.galen.reports.HtmlReportBuilder;
 import net.mindengine.galen.reports.TestReport;
 import net.mindengine.galen.reports.model.LayoutReport;
 import org.apache.thrift.TException;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.*;
@@ -39,9 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
-import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.transformValues;
 import static galen.api.server.GsonUtils.getGson;
 import static galen.api.server.utils.TestReportUtils.buildTestReportFromReportTree;
 import static java.lang.String.format;
@@ -67,7 +63,7 @@ public class GalenCommandExecutor implements GalenApiRemoteService.Iface {
      * @throws TException
      */
     @Override
-    public Response execute(String sessionId, String commandName, String params) throws RemoteWebDriverException, TException {
+    public Response execute(String sessionId, String commandName, String params) throws TException {
         Map<String, Object> paramsAsMap = fromJsonToStringObjectMap(params);
         if (commandName.equals(DriverCommand.NEW_SESSION)) {
             try {
