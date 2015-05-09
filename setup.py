@@ -20,7 +20,7 @@ setup(
     author_email='valerio.morsella@skyscanner.net',
     package_data={'galenpy': ['service/*.jar', 'pythrift/*-remote', 'utils/*.config']},
     description='Porting of the Galen Framework API to Python',
-    long_description=open('py/README.md').read(),
+    long_description=open('py/README.rst').read(),
     install_requires=get_requirements(),
     package_dir={'':'py'},
     packages=['galenpy', 'galenpy.utils', 'galenpy.pythrift'],
