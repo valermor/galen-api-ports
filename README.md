@@ -18,7 +18,7 @@ Currently, only a Python client exists, namely the galenpy API. Both server and 
 
 ![API port concept](/galen-api-ports.png)
 
-The services Galen APIs can be divided into two sets:
+The services Galen APIs provide can be divided into two sets:
 
 - Hierarchical reports creation
 
@@ -28,12 +28,12 @@ Additionally, the ported API must expose the WebDriver API. The reason is that G
 A custom _Jsonwire over Thrift_ implementation allows to expose Remote WebDriver by the client API.
 
 ##Json over Thrift Remote WebDriver
-Internally, in the Thrift client side, the Jsonwire protocol is implemented inside a customized RemoteConnection which marshalls/unmarshalls Jsonwire commands to and from the Java RemoteWebDriver end through the Thrift mechanism.
-When server receives those commands, it unpackages them and execute through the CommandExecutor of the RemoteWebDriver instance which has been created in the server.
+On the client side, the Jsonwire protocol is implemented inside a customized RemoteConnection which marshalls/unmarshalls Jsonwire commands to and from the Java RemoteWebDriver end via Thrift.
+When the server receives those commands, it unpackages and executes them through the CommandExecutor of the RemoteWebDriver instance wrapped inside the server.
 
 ##Server lifecycle
 The Thrift server is able to serve clients concurrently.
-Among the other things, one of the problem that is solved in the porting is making sure that the server is always available when tests are running and it quits when idle.
+Among the other things, one of the problems that is solved in the porting is making sure that the server is always available when tests are running and it quits when idle.
 On normal usage of the API, the first time the Galen API is called the server should be started. The server will be running until report is generated.
 As some test implementations might want to have control of the server lifecycle, an environment variable exists that disable launching of the server by tests:
 
@@ -48,16 +48,17 @@ This assumes, Galen API service should be launched manually with the below comma
 ```
 
 ##Limitations
-At the moment, you can run your test only against a Selenium Grid, i.e. no local driver is supported.
+At the moment, you can run your tests only against a Selenium Grid, i.e. no local driver is supported.
 
 ##Building the tool
 ###Assembly server jar###
-All thrift files are not part of the repe. The get generated on build time from the file galen_api.thrift.
-Building, and assembling of the Java Server is done automatically via the assemble_java_server.jar script.
+Thrift language files are not part of the repo. They get generated on build time from _galen_api.thrift_.
+
+Building and assembling of the Java Server is done automatically by _assemble_java_server.sh_.
 
 ###Configure Java server log###
-Log config file 'simplelogger.properties' inside resource folder contains log configuration.
-The file gets copied into classpath on assembly step.
+Log configuration file 'simplelogger.properties' inside resource folder contains logging configuration.
+The file gets copied into Java classpath on assembly step before.
 
 ##Distributing galenpy##
 Distribution of galenpy to PyPI is automated via the distribute_galenpy.sh script.
@@ -69,7 +70,12 @@ Running the script will package galenpy for distribution into PyPI. Notice the s
 
 ## galenpy API
 
-The Python Galen API is made out of three parts . An example of usage is shown below.
+[![Wheel Status](https://pypip.in/wheel/galenpy/badge.svg)](https://pypi.python.org/pypi/galenpy/)
+[![Latest Version](https://pypip.in/version/galenpy/badge.svg)](https://pypi.python.org/pypi/galenpy/)
+[![Downloads](https://pypip.in/download/galenpy/badge.svg)](https://pypi.python.org/pypi/galenpy/)
+
+
+The Python Galen API is made out of three parts. An example of usage is shown below.
 
 ### Galen Remote WebDriver
 ```python
@@ -95,3 +101,6 @@ After chaining the various nodes types such as info, warning or layout report, a
    generate_galen_report('target/report')
 ```
 At the end of the Galen Layout validation, the report is generated in the given folder through the call of another Galen API method.
+
+### More examples
+A separate project showing the usage of galenpy can be found at [galen-sample-py-tests](https://github.com/valermor/galen-sample-py-tests).

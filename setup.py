@@ -24,4 +24,5 @@ setup(
     install_requires=get_requirements(),
     package_dir={'':'py'},
     packages=['galenpy', 'galenpy.utils', 'galenpy.pythrift'],
+    license = 'Apache License 2.0'
 )
