@@ -4,17 +4,17 @@ Galen API Ports
 
 
 _Galen API Ports_ is an attempt to port the [Galen Framework](http://galenframework.com "Galen's Homepage") API to languages other than Javascript and Java, which are the ones officially supported.
-At the moment, only porting to Python is provided.
+At the moment, only porting to Python is implemented.
 
 ##License
 _Galen API Ports_ is licensed under the Apache Software License 2.0 provision.
 
-##Architecture
+##Architecture and implementation details
 The porting of the Java API is based on a simple idea. Through an RPC we expose the same functionality as the native API to any other language implementation.
 
 The RPC we use is [Apache Thrift](https://thrift.apache.org/).
 A Thrift Java Server wraps the Galen Java API, while other languages APIs implement Thrift clients.
-Currently, only a Python client exists, namely the galenpy API. Both server and client live in the same project.
+Currently, only a Python client exists, namely the [galenpy](https://pypi.python.org/pypi/galenpy) API. Both server and client currently live in the same project.
 
 ![API port concept](/galen-api-ports.png)
 
@@ -27,11 +27,11 @@ The services Galen APIs provide can be divided into two sets:
 Additionally, the ported API must expose the WebDriver API. The reason is that Galen API needs a reference to the WebDriver instance to perform actions on the page under test.
 A custom _Jsonwire over Thrift_ implementation allows to expose Remote WebDriver by the client API.
 
-##Json over Thrift Remote WebDriver
+###Json over Thrift Remote WebDriver
 On the client side, the Jsonwire protocol is implemented inside a customized RemoteConnection which marshalls/unmarshalls Jsonwire commands to and from the Java RemoteWebDriver end via Thrift.
 When the server receives those commands, it unpackages and executes them through the CommandExecutor of the RemoteWebDriver instance wrapped inside the server.
 
-##Server lifecycle
+###Server lifecycle
 The Thrift server is able to serve clients concurrently.
 Among the other things, one of the problems that is solved in the porting is making sure that the server is always available when tests are running and it quits when idle.
 On normal usage of the API, the first time the Galen API is called the server should be started. The server will be running until report is generated.
@@ -47,20 +47,20 @@ This assumes, Galen API service should be launched manually with the below comma
     java -jar <path_to_server_jar>/galen-api-server.jar -r <port>
 ```
 
-##Limitations
+###Limitations
 At the moment, you can run your tests only against a Selenium Grid, i.e. no local driver is supported.
 
-##Building the tool
-###Assembly server jar###
+###Building the tool
+####Assembly server jar###
 Thrift language files are not part of the repo. They get generated on build time from _galen_api.thrift_.
 
 Building and assembling of the Java Server is done automatically by _assemble_java_server.sh_.
 
-###Configure Java server log###
+####Configure Java server log###
 Log configuration file 'simplelogger.properties' inside resource folder contains logging configuration.
 The file gets copied into Java classpath on assembly step before.
 
-##Distributing galenpy##
+###Distributing galenpy##
 Distribution of galenpy to PyPI is automated via the distribute_galenpy.sh script.
 Running the script will package galenpy for distribution into PyPI. Notice the script also distributes a copy of the source along with a Python Wheel.
 
@@ -70,9 +70,9 @@ Running the script will package galenpy for distribution into PyPI. Notice the s
 
 ## galenpy API
 
-[![Wheel Status](https://pypip.in/wheel/galenpy/badge.svg)](https://pypi.python.org/pypi/galenpy/)
-[![Latest Version](https://pypip.in/version/galenpy/badge.svg)](https://pypi.python.org/pypi/galenpy/)
-[![Downloads](https://pypip.in/download/galenpy/badge.svg)](https://pypi.python.org/pypi/galenpy/)
+[![PyPI](https://img.shields.io/pypi/wheel/galenpy.svg)]()
+[![PyPI](https://img.shields.io/pypi/v/galenpy.svg)]()
+[![PyPI](https://img.shields.io/pypi/dm/galenpy.svg)]()
 
 
 The Python Galen API is made out of three parts. An example of usage is shown below.
