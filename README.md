@@ -4,7 +4,16 @@ Galen API Ports
 
 
 _Galen API Ports_ is an attempt to port the [Galen Framework](http://galenframework.com "Galen's Homepage") API to languages other than Javascript and Java, which are the ones officially supported.
-At the moment, only porting to Python is implemented.
+The project is mean to provide a framework to port the Galen Java API into any of that languages that are supported by Apache Thrift.
+At the moment, only porting to Python is implemented under the name _galenpy_ (read on).
+
+##Why
+At my current job, most teams speak Python. Maintaining a Java project was being expensive and not a scalable option. This is also true in many other workplaces.
+I thought providing a solution would help other people like me who want to use Galen Framework but still would like to stick to their own language.
+
+Also this was a lot of learning and fun!
+
+If you are interested to extend the tool into a language that is not supported (Java, JavaScript and Python), shoot me an email to me and we can have a chat on how you can start on it.
 
 ##License
 _Galen API Ports_ is licensed under the Apache Software License 2.0 provision.
