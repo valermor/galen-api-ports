@@ -59,7 +59,7 @@ class Galen(object):
         try:
             return self.thrift_client.check_layout(driver.session_id, spec, included_tags, excluded_tags)
         except SpecNotFoundException as e:
-            raise FileNotFoundError("Spec was not found: " + str(e.message))
+            raise IOError("Spec was not found: " + str(e.message))
 
     def generate_report(self, report_folder):
         """

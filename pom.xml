@@ -20,17 +20,17 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>2.43.1</version>
+            <version>2.46.0</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-api</artifactId>
-            <version>2.43.1</version>
+            <version>2.46.0</version>
         </dependency>
         <dependency>
             <groupId>net.mindengine</groupId>
             <artifactId>galen</artifactId>
-            <version>1.6.1</version>
+            <version>1.6.3</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
